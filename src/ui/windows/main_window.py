@@ -165,38 +165,42 @@ class MainWindow(BaseWindow):
     # Navigation methods
     def goto_supplier(self):
         """Navigate to supplier management"""
-        # TODO: Import and show SupplierWindow
-        self.show_warning("Supplier management - Coming soon!")
+        from src.ui.windows.supplier_window import SupplierWindow
+        self.supplier_window = SupplierWindow(self.context)
+        self.supplier_window.show()
+        self.close()
 
     def goto_medicine(self):
         """Navigate to medicine management"""
-        # TODO: Import and show MedicineWindow
-        self.show_warning("Medicine management - Coming soon!")
+        # TODO: Complete MedicineWindow refactoring
+        self.show_warning("Medicine management - Refactoring in progress...")
 
     def goto_stock(self):
         """Navigate to stock management"""
-        # TODO: Import and show StockWindow
-        self.show_warning("Stock management - Coming soon!")
+        # TODO: Complete StockWindow refactoring
+        self.show_warning("Stock management - Refactoring in progress...")
 
     def goto_customer(self):
         """Navigate to customer management"""
-        # TODO: Import and show CustomerWindow
-        self.show_warning("Customer management - Coming soon!")
+        # TODO: Complete CustomerWindow refactoring
+        self.show_warning("Customer management - Refactoring in progress...")
 
     def goto_staff(self):
         """Navigate to staff management"""
-        # TODO: Import and show StaffWindow
-        self.show_warning("Staff management - Coming soon!")
+        # TODO: Complete StaffWindow refactoring
+        self.show_warning("Staff management - Refactoring in progress...")
 
     def goto_invoice(self):
         """Navigate to invoice management"""
-        # TODO: Import and show InvoiceWindow
-        self.show_warning("Invoice management - Coming soon!")
+        # TODO: Complete InvoiceWindow refactoring
+        self.show_warning("Invoice management - Refactoring in progress...")
 
     def goto_logs(self):
         """Navigate to activity logs"""
-        # TODO: Import and show LogsWindow
-        self.show_warning("Activity logs - Coming soon!")
+        from src.ui.windows.logs_window import LogsWindow
+        self.logs_window = LogsWindow(self.context)
+        self.logs_window.show()
+        self.close()
 
     def goto_login(self):
         """Logout and return to login"""
@@ -210,8 +214,16 @@ class MainWindow(BaseWindow):
 
     def show_report_dialog(self):
         """Show report export dialog"""
-        # TODO: Import and show ReportDialog
-        self.show_warning("Report export - Coming soon!")
+        from src.ui.dialogs.report_dialog import ReportDialog
+        dialog = ReportDialog(self.context, self)
+
+        # Show quick menu for report type
+        from PyQt6.QtWidgets import QMenu
+        menu = QMenu(self)
+        menu.addAction("Stock Report", dialog.export_stock_report)
+        menu.addAction("Invoice Report (Today)", dialog.export_invoice_report)
+        menu.addAction("Expiry Warning", dialog.export_expiry_report)
+        menu.exec(self.export_report.mapToGlobal(self.export_report.rect().bottomLeft()))
 
     def show_create_invoice(self):
         """Show create invoice dialog"""
