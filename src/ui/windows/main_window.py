@@ -172,28 +172,38 @@ class MainWindow(BaseWindow):
 
     def goto_medicine(self):
         """Navigate to medicine management"""
-        # TODO: Complete MedicineWindow refactoring
-        self.show_warning("Medicine management - Refactoring in progress...")
+        from src.ui.windows.medicine_window import MedicineWindow
+        self.medicine_window = MedicineWindow(self.context)
+        self.medicine_window.show()
+        self.close()
 
     def goto_stock(self):
         """Navigate to stock management"""
-        # TODO: Complete StockWindow refactoring
-        self.show_warning("Stock management - Refactoring in progress...")
+        from src.ui.windows.stock_window import StockWindow
+        self.stock_window = StockWindow(self.context)
+        self.stock_window.show()
+        self.close()
 
     def goto_customer(self):
         """Navigate to customer management"""
-        # TODO: Complete CustomerWindow refactoring
-        self.show_warning("Customer management - Refactoring in progress...")
+        from src.ui.windows.customer_window import CustomerWindow
+        self.customer_window = CustomerWindow(self.context)
+        self.customer_window.show()
+        self.close()
 
     def goto_staff(self):
         """Navigate to staff management"""
-        # TODO: Complete StaffWindow refactoring
-        self.show_warning("Staff management - Refactoring in progress...")
+        from src.ui.windows.staff_window import StaffWindow
+        self.staff_window = StaffWindow(self.context)
+        self.staff_window.show()
+        self.close()
 
     def goto_invoice(self):
         """Navigate to invoice management"""
-        # TODO: Complete InvoiceWindow refactoring
-        self.show_warning("Invoice management - Refactoring in progress...")
+        from src.ui.windows.invoice_window import InvoiceWindow
+        self.invoice_window = InvoiceWindow(self.context)
+        self.invoice_window.show()
+        self.close()
 
     def goto_logs(self):
         """Navigate to activity logs"""
@@ -227,11 +237,15 @@ class MainWindow(BaseWindow):
 
     def show_create_invoice(self):
         """Show create invoice dialog"""
-        # TODO: Import and show CreateInvoiceDialog
-        self.show_warning("Create invoice - Coming soon!")
+        from src.ui.dialogs.create_invoice_dialog import CreateInvoiceDialog
+        dialog = CreateInvoiceDialog(self.context, parent=self)
+        if dialog.exec():
+            # Refresh today's invoice data
+            self.load_today_invoice()
 
     def handle_invoice_detail_click(self, row, col):
         """Handle invoice detail click"""
-        # TODO: Show invoice details
+        from src.ui.dialogs.invoice_information_dialog import InvoiceInformationDialog
         invoice_id = self.invoice_daily.item(row, 0).text()
-        self.show_warning(f"Invoice details for ID: {invoice_id} - Coming soon!")
+        dialog = InvoiceInformationDialog(self.context, invoice_id, self)
+        dialog.exec()

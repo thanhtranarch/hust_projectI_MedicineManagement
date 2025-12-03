@@ -51,9 +51,11 @@ REPORT_TYPE_EXPIRY = 'expiry'
 
 # UI Messages
 MSG_SUCCESS_SAVE = "Lưu thành công!"
+MSG_SUCCESS_ADD = "Thêm mới thành công!"
 MSG_SUCCESS_DELETE = "Xóa thành công!"
 MSG_SUCCESS_UPDATE = "Cập nhật thành công!"
 MSG_ERROR_SAVE = "Lỗi khi lưu dữ liệu!"
+MSG_ERROR_ADD = "Lỗi khi thêm dữ liệu!"
 MSG_ERROR_DELETE = "Lỗi khi xóa dữ liệu!"
 MSG_ERROR_UPDATE = "Lỗi khi cập nhật dữ liệu!"
 MSG_ERROR_CONNECTION = "Không thể kết nối database!"
