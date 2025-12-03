@@ -37,28 +37,49 @@ https://dbdiagram.io/d/PROJECT-I-MEDICINE-MANAGEMENT-67ef9cc94f7afba184576060?ut
 ```
 MediManager/
 │
-├── MediManager.py          # Điểm bắt đầu chương trình
-├── app_context.py          # Kết nối CSDL
-├── constants.py            # Đường dẫn icon, query mẫu, v.v.
-├── utils/
-│   └── helpers.py          # Các hàm dùng chung (load_ui, logging)
-├── services/
-│   ├── db_service.py       # Đóng gói thao tác DB
-│   └── report_service.py   # Xuất báo cáo
-├── screens/
-│   ├── main_window.py
-│   ├── auth.py
-│   ├── supplier.py
-│   ├── customer.py
-│   ├── staff.py
-│   ├── medicine.py
-│   ├── invoice.py
-│   └── stock.py
-├── ui/                     # Các file .ui
-└── icons/                  # Các file icon
-
-
+├── run.py                      # Entry point - Điểm bắt đầu chương trình
+├── requirements.txt            # Python dependencies
+├── .env.example                # Template cấu hình môi trường
+├── .gitignore                  # Git ignore rules
+│
+├── src/                        # Source code
+│   ├── config/                 # Configuration management
+│   │   ├── settings.py         # Application settings
+│   │   └── database.py         # Database configuration
+│   │
+│   ├── core/                   # Core business logic
+│   │   ├── db_manager.py       # Database manager
+│   │   └── app_context.py      # Application context
+│   │
+│   ├── services/               # Business services
+│   │   └── report_service.py   # PDF report generation
+│   │
+│   ├── ui/                     # User interface
+│   │   ├── windows/            # Main windows
+│   │   ├── dialogs/            # Dialog windows
+│   │   └── forms/              # Qt Designer .ui files
+│   │
+│   └── utils/                  # Utilities
+│       ├── helpers.py          # Helper functions
+│       └── constants.py        # Application constants
+│
+├── assets/                     # Static resources
+│   ├── icons/                  # Application icons
+│   └── fonts/                  # Fonts for PDF
+│
+├── exports/                    # Generated reports
+│
+├── docs/                       # Documentation
+│   └── ARCHITECTURE.md         # Architecture documentation
+│
+└── Legacy files (đang refactor):
+    ├── MediManager.py          # Main UI code (sẽ được tách)
+    ├── DBManager.py            # Database code (đã migrate to src/core/)
+    └── export_reports.py       # Report code (đã migrate to src/services/)
 ```
+
+> **Lưu ý**: Dự án đang trong quá trình refactor từ cấu trúc monolithic sang clean architecture.
+> Xem chi tiết tại [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 ## 🧾 Các chức năng chính
 
 - **Đăng nhập / Đăng ký** (Phân quyền: admin, manager, staff)
@@ -142,6 +163,12 @@ DB_PASSWORD=your-database-password
 ### 3. Khởi chạy ứng dụng
 
 ```bash
+python run.py
+```
+
+Hoặc (cách cũ, vẫn hoạt động):
+
+```bash
 python MediManager.py
 ```
 
@@ -201,12 +228,35 @@ File `main.exe` nằm trong thư mục `dist/`. Chạy file này để sử dụ
 
 ---
 
+## Kiến trúc dự án
+
+Dự án được tổ chức theo **Clean Architecture** với các lớp rõ ràng:
+
+- **Config Layer**: Quản lý cấu hình (settings, database config)
+- **Core Layer**: Logic nghiệp vụ cốt lõi (database, app context)
+- **Service Layer**: Các dịch vụ nghiệp vụ (reports, auth, ...)
+- **UI Layer**: Giao diện người dùng (windows, dialogs)
+- **Utils Layer**: Các hàm tiện ích dùng chung
+
+Xem chi tiết tại: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+
 ## Hướng phát triển tương lai
 
-- Xuất báo cáo định dạng PDF
-- Lọc báo cáo theo ngày/tháng/năm
-- Tích hợp API / phiên bản mobile
-- Giao diện hiện đại hơn
+### Version 2.x (In Progress)
+- ✅ Migrate sang Supabase PostgreSQL Cloud
+- ✅ Tổ chức lại cấu trúc theo Clean Architecture
+- ⏳ Refactor UI code thành các module riêng biệt
+- ⏳ Tách service layer cho từng nghiệp vụ
+- 📝 Thêm unit tests
+
+### Version 3.x (Planned)
+- REST API cho mobile app
+- Advanced reporting với charts
+- Role-based access control (RBAC)
+- Real-time notifications
+- Barcode scanning
+- Multi-language support
+- Dark mode UI
 
 ---
 

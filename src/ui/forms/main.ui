@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1003</width>
+    <height>672</height>
+   </rect>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="layoutDirection">
+    <enum>Qt::LeftToRight</enum>
+   </property>
+   <layout class="QGridLayout" name="gridLayout_3">
+    <item row="1" column="1" rowspan="2" colspan="4">
+     <widget class="QGroupBox" name="groupBox">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="title">
+       <string>DANH SÁCH THUỐC TỒN KHO</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_4">
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="list_outdate">
+         <property name="title">
+          <string>THUỐC SẮP HẾT HẠN</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout">
+          <item row="1" column="3" rowspan="2">
+           <widget class="QPushButton" name="warning_detail">
+            <property name="text">
+             <string>CHI TIẾT</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0" rowspan="2" colspan="2">
+           <widget class="QLabel" name="label">
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <italic>true</italic>
+             </font>
+            </property>
+            <property name="text">
+             <string>*Cảnh báo sớm những thuốc sắp hết hạn</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="4">
+           <widget class="QTableWidget" name="outdate_medicine">
+            <attribute name="horizontalHeaderCascadingSectionResizes">
+             <bool>true</bool>
+            </attribute>
+            <column>
+             <property name="text">
+              <string>ID</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Name</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Quantity</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Unit</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Batch No.</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Expiry Date</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Days Left</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Status</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item row="1" column="2" rowspan="2">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <italic>true</italic>
+             </font>
+            </property>
+            <property name="text">
+             <string>⚠️: ≤60 ngày </string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="font">
+             <font>
+              <pointsize>8</pointsize>
+              <italic>true</italic>
+             </font>
+            </property>
+            <property name="text">
+             <string>❗:≤30 ngày </string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QTableWidget" name="stock_medicine">
+         <property name="columnCount">
+          <number>6</number>
+         </property>
+         <attribute name="horizontalHeaderCascadingSectionResizes">
+          <bool>true</bool>
+         </attribute>
+         <attribute name="verticalHeaderCascadingSectionResizes">
+          <bool>false</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>ID</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Name</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Unit</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Quantity</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Batch No.</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Price</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="stock_detail">
+         <property name="text">
+          <string>CHI TIẾT</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="3" column="4">
+     <widget class="QPushButton" name="invoice_create">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="mouseTracking">
+       <bool>true</bool>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="text">
+       <string>TẠO HÓA ĐƠN</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="3">
+     <spacer name="horizontalSpacer">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>685</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="0" column="1" colspan="4">
+     <widget class="QGroupBox" name="invoice_daily_group">
+      <property name="title">
+       <string>DANH SÁCH HÓA ĐƠN TRONG NGÀY</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="1" column="0">
+        <widget class="QPushButton" name="invoice_detail">
+         <property name="text">
+          <string>CHI TIẾT</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QTableWidget" name="invoice_daily">
+         <property name="rowCount">
+          <number>0</number>
+         </property>
+         <attribute name="horizontalHeaderCascadingSectionResizes">
+          <bool>true</bool>
+         </attribute>
+         <column>
+          <property name="text">
+           <string>Invoice ID</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Time</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Customer</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Total Amount</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Staff</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Notes</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Details</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="5" rowspan="4">
+     <spacer name="horizontalSpacer_6">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>582</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="0" column="0" rowspan="4">
+     <spacer name="horizontalSpacer_7">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>20</width>
+        <height>582</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+    <item row="3" column="1" colspan="2">
+     <widget class="QPushButton" name="export_report">
+      <property name="text">
+       <string>IN BÁO CÁO NGÀY</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="1" colspan="4">
+     <spacer name="horizontalSpacer_3">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="sizeHint" stdset="0">
+       <size>
+        <width>679</width>
+        <height>20</height>
+       </size>
+      </property>
+     </spacer>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>1003</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuMaindashboard">
+    <property name="title">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuGeneral_Management">
+    <property name="title">
+     <string>General Management</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionCustomer"/>
+    <addaction name="actionMedicine"/>
+    <addaction name="actionInvoice"/>
+    <addaction name="actionStaff"/>
+    <addaction name="actionStock"/>
+    <addaction name="actionSupplier"/>
+    <addaction name="actionLogs"/>
+    <addaction name="actionLog_out"/>
+   </widget>
+   <addaction name="menuGeneral_Management"/>
+   <addaction name="menuMaindashboard"/>
+  </widget>
+  <action name="actionCustomer">
+   <property name="text">
+    <string>Customer</string>
+   </property>
+  </action>
+  <action name="actionStaff">
+   <property name="text">
+    <string>Staff</string>
+   </property>
+  </action>
+  <action name="actionMedicine">
+   <property name="text">
+    <string>Medicine</string>
+   </property>
+  </action>
+  <action name="actionInvoice">
+   <property name="text">
+    <string>Invoice</string>
+   </property>
+  </action>
+  <action name="actionSupplier">
+   <property name="text">
+    <string>Supplier</string>
+   </property>
+  </action>
+  <action name="actionStock">
+   <property name="text">
+    <string>Stock</string>
+   </property>
+  </action>
+  <action name="actionLog_out">
+   <property name="text">
+    <string>⮌ Log out</string>
+   </property>
+  </action>
+  <action name="actionLogs">
+   <property name="text">
+    <string>Logs</string>
+   </property>
+  </action>
+ </widget>
+ <tabstops>
+  <tabstop>stock_detail</tabstop>
+  <tabstop>invoice_detail</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
