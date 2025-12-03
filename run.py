@@ -15,6 +15,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from PyQt6.QtWidgets import QApplication, QMessageBox
 from src.config import Settings, DatabaseConfig
+from src.core import AppContext
+from src.ui.dialogs import LoginDialog
 
 
 def main():
@@ -44,18 +46,34 @@ def main():
     print()
 
     try:
-        # Import and run the legacy application (MediManager.py)
-        # TODO: Refactor MediManager.py into new structure
-        print("⚠️  Running in legacy mode...")
-        print("⚠️  Full refactor to new structure in progress...")
+        # Create application context
+        print("🔌 Connecting to Supabase...")
+        context = AppContext()
+        print("✅ Connected to database successfully!")
         print()
 
-        # For now, we'll import the old MediManager module
-        # In future versions, this will be replaced with new structure
-        import MediManager
+        # Show login window
+        print("🚀 Starting application...")
+        login_window = LoginDialog(context)
+        login_window.show()
 
-        # The old MediManager.py should handle the rest
+        # Run application event loop
         sys.exit(app.exec())
+
+    except ConnectionError as e:
+        print(f"❌ Database Connection Error: {e}")
+        print("\n📝 Please check your .env configuration")
+
+        # Show error dialog
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Icon.Critical)
+        msg.setWindowTitle("Connection Error")
+        msg.setText("Failed to connect to database")
+        msg.setInformativeText(str(e))
+        msg.setDetailedText("Please check your .env file configuration.")
+        msg.exec()
+
+        sys.exit(1)
 
     except Exception as e:
         print(f"❌ Fatal Error: {e}")

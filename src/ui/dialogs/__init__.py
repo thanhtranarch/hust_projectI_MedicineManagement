@@ -2,4 +2,10 @@
 Dialog windows for various operations
 """
 
-# Dialogs will be imported here when refactored from MediManager.py
+from .login_dialog import LoginDialog
+from .register_dialog import RegisterDialog
+
+__all__ = [
+    'LoginDialog',
+    'RegisterDialog',
+]

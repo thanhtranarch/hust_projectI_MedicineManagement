@@ -2,4 +2,8 @@
 Main application windows
 """
 
-# Windows will be imported here when refactored from MediManager.py
+from .main_window import MainWindow
+
+__all__ = [
+    'MainWindow',
+]
