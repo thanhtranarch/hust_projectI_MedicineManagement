@@ -1,4 +1,4 @@
-# 💊 MediManager - Hệ Thống Quản Lý Nhà Thuốc
+# MediManager - Hệ Thống Quản Lý Nhà Thuốc
 
 <div align="center">
 
@@ -10,34 +10,34 @@
 
 **Ứng dụng desktop quản lý nhà thuốc hiện đại với kiến trúc Clean Architecture**
 
-[Tính năng](#-tính-năng-chính) • [Cài đặt](#-cài-đặt) • [Sử dụng](#-sử-dụng) • [Kiến trúc](#-kiến-trúc) • [Đóng góp](#-đóng-góp)
+[Tính năng](#tính-năng-chính) • [Cài đặt](#cài-đặt) • [Sử dụng](#sử-dụng) • [Kiến trúc](#kiến-trúc-hệ-thống) • [Đóng góp](#đóng-góp)
 
 </div>
 
 ---
 
-## 📋 Mục lục
+## Mục lục
 
-- [Giới thiệu](#-giới-thiệu)
-- [Tính năng chính](#-tính-năng-chính)
-- [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
-- [Kiến trúc hệ thống](#-kiến-trúc-hệ-thống)
-- [Cài đặt](#-cài-đặt)
-- [Sử dụng](#-sử-dụng)
-- [Cấu trúc thư mục](#-cấu-trúc-thư-mục)
-- [Cơ sở dữ liệu](#-cơ-sở-dữ-liệu)
-- [Đóng gói ứng dụng](#-đóng-gói-ứng-dụng)
-- [Roadmap](#-roadmap)
-- [Đóng góp](#-đóng-góp)
-- [Tác giả](#-tác-giả)
+- [Giới thiệu](#giới-thiệu)
+- [Tính năng chính](#tính-năng-chính)
+- [Công nghệ sử dụng](#công-nghệ-sử-dụng)
+- [Kiến trúc hệ thống](#kiến-trúc-hệ-thống)
+- [Cài đặt](#cài-đặt)
+- [Sử dụng](#sử-dụng)
+- [Cấu trúc thư mục](#cấu-trúc-thư-mục)
+- [Cơ sở dữ liệu](#cơ-sở-dữ-liệu)
+- [Đóng gói ứng dụng](#đóng-gói-ứng-dụng)
+- [Roadmap](#roadmap)
+- [Đóng góp](#đóng-góp)
+- [Tác giả](#tác-giả)
 
 ---
 
-## 🎯 Giới thiệu
+## Giới thiệu
 
 **MediManager** là ứng dụng desktop quản lý nhà thuốc toàn diện, được phát triển với **Python** và **PyQt6**, kết nối với **Supabase PostgreSQL Cloud**. Dự án được xây dựng theo kiến trúc **Clean Architecture**, đảm bảo tính bảo trì, mở rộng và kiểm thử cao.
 
-### 🎓 Thông tin dự án
+### Thông tin dự án
 - **Môn học**: PROJECT I
 - **Trường**: Đại học Bách khoa Hà Nội
 - **Phiên bản**: 2.0.0
@@ -45,48 +45,48 @@
 
 ---
 
-## ✨ Tính năng chính
+## Tính năng chính
 
-### 👥 Quản lý người dùng
-- ✅ Đăng nhập / Đăng ký tài khoản
-- ✅ Phân quyền 3 cấp: **Admin**, **Manager**, **Staff**
-- ✅ Quản lý thông tin nhân viên
-- ✅ Theo dõi lịch sử hoạt động người dùng
+### Quản lý người dùng
+- Đăng nhập / Đăng ký tài khoản
+- Phân quyền 3 cấp: **Admin**, **Manager**, **Staff**
+- Quản lý thông tin nhân viên
+- Theo dõi lịch sử hoạt động người dùng
 
-### 💊 Quản lý thuốc
-- ✅ Thêm, sửa, xóa thông tin thuốc
-- ✅ Tìm kiếm và lọc thuốc theo danh mục
-- ✅ Quản lý chi tiết thuốc (thành phần, công dụng, liều lượng)
-- ✅ Theo dõi ngày sản xuất và hạn sử dụng
+### Quản lý thuốc
+- Thêm, sửa, xóa thông tin thuốc
+- Tìm kiếm và lọc thuốc theo danh mục
+- Quản lý chi tiết thuốc (thành phần, công dụng, liều lượng)
+- Theo dõi ngày sản xuất và hạn sử dụng
 
-### 📦 Quản lý tồn kho
-- ✅ Theo dõi số lượng tồn kho theo thời gian thực
-- ✅ Cảnh báo thuốc sắp hết hạn
-- ✅ Cảnh báo thuốc tồn kho thấp
-- ✅ Quản lý giao dịch nhập/xuất kho
-- ✅ Lịch sử biến động tồn kho
+### Quản lý tồn kho
+- Theo dõi số lượng tồn kho theo thời gian thực
+- Cảnh báo thuốc sắp hết hạn
+- Cảnh báo thuốc tồn kho thấp
+- Quản lý giao dịch nhập/xuất kho
+- Lịch sử biến động tồn kho
 
-### 🏪 Quản lý nhà cung cấp & khách hàng
-- ✅ Quản lý thông tin nhà cung cấp
-- ✅ Quản lý thông tin khách hàng
-- ✅ Theo dõi lịch sử giao dịch
+### Quản lý nhà cung cấp & khách hàng
+- Quản lý thông tin nhà cung cấp
+- Quản lý thông tin khách hàng
+- Theo dõi lịch sử giao dịch
 
-### 🧾 Quản lý hóa đơn
-- ✅ Tạo hóa đơn bán hàng
-- ✅ Quản lý chi tiết hóa đơn
-- ✅ Theo dõi doanh thu theo ngày
-- ✅ Tìm kiếm và xem lại hóa đơn cũ
+### Quản lý hóa đơn
+- Tạo hóa đơn bán hàng
+- Quản lý chi tiết hóa đơn
+- Theo dõi doanh thu theo ngày
+- Tìm kiếm và xem lại hóa đơn cũ
 
-### 📊 Báo cáo & Thống kê
-- ✅ Báo cáo tồn kho
-- ✅ Báo cáo doanh thu
-- ✅ Báo cáo thuốc sắp hết hạn
-- ✅ Xuất báo cáo PDF
-- ✅ Nhật ký hoạt động hệ thống
+### Báo cáo & Thống kê
+- Báo cáo tồn kho
+- Báo cáo doanh thu
+- Báo cáo thuốc sắp hết hạn
+- Xuất báo cáo PDF
+- Nhật ký hoạt động hệ thống
 
 ---
 
-## 🛠 Công nghệ sử dụng
+## Công nghệ sử dụng
 
 ### Backend & Database
 | Công nghệ | Mô tả | Phiên bản |
@@ -111,7 +111,7 @@
 
 ---
 
-## 🏗 Kiến trúc hệ thống
+## Kiến trúc hệ thống
 
 MediManager được xây dựng theo **Clean Architecture** với các lớp phân tách rõ ràng:
 
@@ -144,17 +144,17 @@ MediManager được xây dựng theo **Clean Architecture** với các lớp ph
 ```
 
 ### Lợi ích của Clean Architecture:
-- ✅ **Tách biệt trách nhiệm**: Mỗi layer có trách nhiệm riêng biệt
-- ✅ **Dễ bảo trì**: Thay đổi một layer không ảnh hưởng layer khác
-- ✅ **Dễ kiểm thử**: Có thể test từng layer độc lập
-- ✅ **Mở rộng**: Dễ dàng thêm tính năng mới
-- ✅ **Tái sử dụng**: Code có thể tái sử dụng ở nhiều nơi
+- **Tách biệt trách nhiệm**: Mỗi layer có trách nhiệm riêng biệt
+- **Dễ bảo trì**: Thay đổi một layer không ảnh hưởng layer khác
+- **Dễ kiểm thử**: Có thể test từng layer độc lập
+- **Mở rộng**: Dễ dàng thêm tính năng mới
+- **Tái sử dụng**: Code có thể tái sử dụng ở nhiều nơi
 
-📖 **Chi tiết kiến trúc**: Xem [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+**Chi tiết kiến trúc**: Xem [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ---
 
-## 📥 Cài đặt
+## Cài đặt
 
 ### Yêu cầu hệ thống
 - **Python**: 3.8 trở lên
@@ -246,7 +246,7 @@ DB_PASSWORD=your-database-password
 
 ---
 
-## 🚀 Sử dụng
+## Sử dụng
 
 ### Khởi chạy ứng dụng
 
@@ -269,7 +269,7 @@ Username: admin
 Password: admin
 ```
 
-> ⚠️ **Lưu ý bảo mật**: Đổi mật khẩu admin ngay sau lần đăng nhập đầu tiên!
+> **Lưu ý bảo mật**: Đổi mật khẩu admin ngay sau lần đăng nhập đầu tiên!
 
 ### Giao diện chính
 
@@ -279,39 +279,39 @@ Sau khi đăng nhập, bạn sẽ thấy Dashboard với các module:
 ┌─────────────────────────────────────────┐
 │          MediManager Dashboard           │
 ├─────────────────────────────────────────┤
-│  📊 Dashboard  │  💊 Thuốc  │  📦 Kho   │
-│  🏪 Khách hàng │  🧾 Hóa đơn │ 👥 Nhân viên│
-│  📈 Báo cáo    │  📝 Nhật ký │ ⚙️ Cài đặt│
+│  Dashboard  │  Thuốc      │  Kho        │
+│  Khách hàng │  Hóa đơn    │  Nhân viên  │
+│  Báo cáo    │  Nhật ký    │  Cài đặt   │
 └─────────────────────────────────────────┘
 ```
 
 ---
 
-## 📂 Cấu trúc thư mục
+## Cấu trúc thư mục
 
 ```
 MediManager/
 │
-├── 📄 run.py                     # Entry point chính
-├── 📄 requirements.txt           # Python dependencies
-├── 📄 .env.example              # Template cấu hình
-├── 📄 .gitignore                # Git ignore rules
-├── 📄 supabase_schema.sql       # Database schema
+├── run.py                       # Entry point chính
+├── requirements.txt             # Python dependencies
+├── .env.example                 # Template cấu hình
+├── .gitignore                   # Git ignore rules
+├── supabase_schema.sql          # Database schema
 │
-├── 📁 src/                       # Source code
-│   ├── 📁 config/               # Quản lý cấu hình
+├── src/                         # Source code
+│   ├── config/                  # Quản lý cấu hình
 │   │   ├── settings.py          # Cài đặt ứng dụng
 │   │   └── database.py          # Cấu hình database
 │   │
-│   ├── 📁 core/                 # Core business logic
+│   ├── core/                    # Core business logic
 │   │   ├── db_manager.py        # Database manager (DAO)
 │   │   └── app_context.py       # Application context
 │   │
-│   ├── 📁 services/             # Business services
+│   ├── services/                # Business services
 │   │   └── report_service.py    # Tạo báo cáo PDF
 │   │
-│   ├── 📁 ui/                   # Giao diện người dùng
-│   │   ├── 📁 windows/         # Main windows
+│   ├── ui/                      # Giao diện người dùng
+│   │   ├── windows/             # Main windows
 │   │   │   ├── main_window.py
 │   │   │   ├── medicine_window.py
 │   │   │   ├── invoice_window.py
@@ -321,7 +321,7 @@ MediManager/
 │   │   │   ├── staff_window.py
 │   │   │   └── logs_window.py
 │   │   │
-│   │   ├── 📁 dialogs/         # Dialog windows
+│   │   ├── dialogs/             # Dialog windows
 │   │   │   ├── login_dialog.py
 │   │   │   ├── register_dialog.py
 │   │   │   ├── medicine_information_dialog.py
@@ -333,24 +333,24 @@ MediManager/
 │   │   │   ├── staff_information_dialog.py
 │   │   │   └── report_dialog.py
 │   │   │
-│   │   ├── 📁 forms/           # Qt Designer .ui files
-│   │   └── 📁 base/            # Base classes
+│   │   ├── forms/               # Qt Designer .ui files
+│   │   └── base/                # Base classes
 │   │       ├── base_window.py
 │   │       └── base_dialog.py
 │   │
-│   └── 📁 utils/                # Utilities
+│   └── utils/                   # Utilities
 │       ├── helpers.py           # Helper functions
 │       └── constants.py         # Application constants
 │
-├── 📁 assets/                   # Static resources
-│   ├── 📁 icons/               # Application icons
-│   └── 📁 fonts/               # Fonts for PDF
+├── assets/                      # Static resources
+│   ├── icons/                   # Application icons
+│   └── fonts/                   # Fonts for PDF
 │
-├── 📁 exports/                  # Generated reports
-├── 📁 docs/                     # Documentation
+├── exports/                     # Generated reports
+├── docs/                        # Documentation
 │   └── ARCHITECTURE.md
 │
-└── 📁 Legacy files/             # (Đang refactor)
+└── Legacy files/                # (Đang refactor)
     ├── MediManager.py          # Main UI cũ
     ├── DBManager.py            # Database code cũ
     └── export_reports.py       # Report code cũ
@@ -358,7 +358,7 @@ MediManager/
 
 ---
 
-## 🗄 Cơ sở dữ liệu
+## Cơ sở dữ liệu
 
 ### Database: Supabase PostgreSQL Cloud
 
@@ -396,17 +396,17 @@ staff (1) ──< (N) activity_log
 
 | Tính năng | Mô tả |
 |-----------|-------|
-| ☁️ **Cloud-based** | Không cần cài MySQL/PostgreSQL local |
-| 🆓 **Free tier** | 500MB database, 2GB bandwidth/tháng |
-| 🔄 **Auto backup** | Tự động backup dữ liệu định kỳ |
-| 🔒 **Bảo mật cao** | SSL/TLS encryption, Row Level Security |
-| 📈 **Scalable** | Dễ dàng nâng cấp khi cần |
-| 🖥 **Dashboard** | Quản lý database qua web interface |
-| 🌐 **Realtime** | Hỗ trợ realtime subscriptions |
+| **Cloud-based** | Không cần cài MySQL/PostgreSQL local |
+| **Free tier** | 500MB database, 2GB bandwidth/tháng |
+| **Auto backup** | Tự động backup dữ liệu định kỳ |
+| **Bảo mật cao** | SSL/TLS encryption, Row Level Security |
+| **Scalable** | Dễ dàng nâng cấp khi cần |
+| **Dashboard** | Quản lý database qua web interface |
+| **Realtime** | Hỗ trợ realtime subscriptions |
 
 ---
 
-## 📦 Đóng gói ứng dụng
+## Đóng gói ứng dụng
 
 ### Tạo file executable (.exe) với PyInstaller
 
@@ -452,51 +452,51 @@ dist/run/run          (macOS/Linux)
 2. Đảm bảo file `.env` đã được cấu hình đúng
 3. Chạy file `run.exe` (Windows) hoặc `run` (macOS/Linux)
 
-> ⚠️ **Lưu ý**: Đảm bảo file `.env` không chứa thông tin nhạy cảm khi phân phối
+> **Lưu ý**: Đảm bảo file `.env` không chứa thông tin nhạy cảm khi phân phối
 
 ---
 
-## 🗺 Roadmap
+## Roadmap
 
-### ✅ Version 1.0 (Completed)
-- ✅ Giao diện cơ bản với PyQt6
-- ✅ Quản lý thuốc, khách hàng, nhà cung cấp
-- ✅ Hóa đơn và tồn kho cơ bản
-- ✅ Database MySQL local
+### Version 1.0 (Completed)
+- [x] Giao diện cơ bản với PyQt6
+- [x] Quản lý thuốc, khách hàng, nhà cung cấp
+- [x] Hóa đơn và tồn kho cơ bản
+- [x] Database MySQL local
 
-### ✅ Version 2.0 (Current)
-- ✅ Migrate sang Supabase PostgreSQL Cloud
-- ✅ Refactor theo Clean Architecture
-- ✅ Tách UI thành các module riêng
-- ✅ Service layer cho business logic
-- 🔄 Hoàn thiện tất cả UI windows/dialogs (In Progress)
-- 📝 Thêm unit tests (Planned)
+### Version 2.0 (Current)
+- [x] Migrate sang Supabase PostgreSQL Cloud
+- [x] Refactor theo Clean Architecture
+- [x] Tách UI thành các module riêng
+- [x] Service layer cho business logic
+- [ ] Hoàn thiện tất cả UI windows/dialogs (In Progress)
+- [ ] Thêm unit tests (Planned)
 
-### 🔮 Version 3.0 (Future)
-- 📱 **Mobile App**: Flutter app kết nối API
-- 🔐 **Advanced RBAC**: Phân quyền chi tiết hơn
-- 📊 **Analytics Dashboard**: Biểu đồ và thống kê nâng cao
-- 🔔 **Notifications**: Thông báo realtime
-- 📷 **Barcode Scanner**: Quét mã vạch thuốc
-- 🌍 **Multi-language**: Tiếng Việt & English
-- 🎨 **Dark Mode**: Giao diện tối
-- 💾 **Export Excel**: Xuất báo cáo Excel
-- 🔄 **Sync**: Đồng bộ offline-online
-- 🤖 **AI**: Gợi ý thuốc dựa trên triệu chứng
+### Version 3.0 (Future)
+- **Mobile App**: Flutter app kết nối API
+- **Advanced RBAC**: Phân quyền chi tiết hơn
+- **Analytics Dashboard**: Biểu đồ và thống kê nâng cao
+- **Notifications**: Thông báo realtime
+- **Barcode Scanner**: Quét mã vạch thuốc
+- **Multi-language**: Tiếng Việt & English
+- **Dark Mode**: Giao diện tối
+- **Export Excel**: Xuất báo cáo Excel
+- **Sync**: Đồng bộ offline-online
+- **AI**: Gợi ý thuốc dựa trên triệu chứng
 
-### 🚀 Version 4.0 (Vision)
-- 🌐 **Web App**: Progressive Web App (PWA)
-- ☁️ **Microservices**: Tách backend thành microservices
-- 🐳 **Docker**: Containerization
-- ⚡ **Redis Cache**: Caching layer
-- 📡 **GraphQL API**: Alternative to REST
-- 🔍 **Elasticsearch**: Advanced search
-- 📈 **Big Data**: Analytics với Apache Spark
-- 🤝 **Integration**: Kết nối hệ thống kế toán, ERP
+### Version 4.0 (Vision)
+- **Web App**: Progressive Web App (PWA)
+- **Microservices**: Tách backend thành microservices
+- **Docker**: Containerization
+- **Redis Cache**: Caching layer
+- **GraphQL API**: Alternative to REST
+- **Elasticsearch**: Advanced search
+- **Big Data**: Analytics với Apache Spark
+- **Integration**: Kết nối hệ thống kế toán, ERP
 
 ---
 
-## 🤝 Đóng góp
+## Đóng góp
 
 Mọi đóng góp đều được chào đón! Dự án này đang trong giai đoạn phát triển tích cực.
 
@@ -519,11 +519,11 @@ Mọi đóng góp đều được chào đón! Dự án này đang trong giai đ
 
 ### Coding Guidelines
 
-- ✅ Tuân thủ **PEP 8** style guide
-- ✅ Thêm **docstrings** cho functions/classes
-- ✅ Viết **type hints** cho parameters
-- ✅ Thêm **unit tests** cho code mới
-- ✅ Cập nhật **documentation** khi cần
+- Tuân thủ **PEP 8** style guide
+- Thêm **docstrings** cho functions/classes
+- Viết **type hints** cho parameters
+- Thêm **unit tests** cho code mới
+- Cập nhật **documentation** khi cần
 
 ### Issues & Bugs
 
@@ -534,7 +534,7 @@ Nếu bạn tìm thấy bug hoặc có đề xuất tính năng:
 
 ---
 
-## 📄 License
+## License
 
 Dự án này được phát hành dưới **MIT License**.
 
@@ -550,7 +550,7 @@ in the Software without restriction...
 
 ---
 
-## 👨‍💻 Tác giả
+## Tác giả
 
 <div align="center">
 
@@ -567,7 +567,7 @@ Môn học: **PROJECT I**
 
 ---
 
-## 🙏 Cảm ơn
+## Cảm ơn
 
 Xin cảm ơn:
 - **Supabase Team** - Cloud PostgreSQL platform tuyệt vời
@@ -579,8 +579,8 @@ Xin cảm ơn:
 
 <div align="center">
 
-**⭐ Nếu bạn thấy dự án hữu ích, hãy cho một Star nhé! ⭐**
+**Nếu bạn thấy dự án hữu ích, hãy cho một Star nhé!**
 
-Made with ❤️ by [Trần Tiến Thạnh](https://github.com/thanhtranarch)
+Made with by [Trần Tiến Thạnh](https://github.com/thanhtranarch)
 
 </div>
