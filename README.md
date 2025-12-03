@@ -4,7 +4,7 @@
 
 ## Tổng quan
 
-**MediManager** là ứng dụng desktop quản lý nhà thuốc được phát triển bằng Python (PyQt6) kết nối với cơ sở dữ liệu MySQL. Hệ thống cho phép:
+**MediManager** là ứng dụng desktop quản lý nhà thuốc được phát triển bằng Python (PyQt6) kết nối với cơ sở dữ liệu Supabase (PostgreSQL Cloud). Hệ thống cho phép:
 - Quản lý thông tin thuốc, nhà cung cấp, khách hàng, nhân viên.
 - Lập hóa đơn, theo dõi tồn kho.
 - Báo cáo thuốc sắp hết hạn, nhật ký hoạt động.
@@ -15,8 +15,8 @@
 | Thành phần        | Công nghệ             |
 |-------------------|------------------------|
 | Giao diện người dùng | PyQt6 (UI dạng `.ui`) |
-| Cơ sở dữ liệu     | MySQL (MariaDB)       |
-| ORM đơn giản      | Tự viết với MySQLdb   |
+| Cơ sở dữ liệu     | Supabase (PostgreSQL Cloud) |
+| Database Driver   | psycopg2              |
 | Bảo mật mật khẩu  | bcrypt (hash)         |
 | Báo cáo & UI nâng cao | PyQt + QTableWidget + QLabel + QTimer |
 
@@ -27,7 +27,7 @@ CSDL `medimanager` bao gồm các bảng chính:
 - `invoice`, `invoice_detail`, `customer`
 - `staff` (có phân quyền admin, manager, staff), `activity_log`
 
-SQL schema được lưu trong `medimanager.sql`.
+SQL schema được lưu trong `supabase_schema.sql`.
 
 ## Sơ đồ quan hệ các thực thể
 https://dbdiagram.io/d/PROJECT-I-MEDICINE-MANAGEMENT-67ef9cc94f7afba184576060?utm_source=dbdiagram_embed&utm_medium=bottom_open
@@ -73,24 +73,79 @@ MediManager/
 
 ---
 
-## 🛠Cài đặt và chạy
+## 🛠 Cài đặt và chạy
 
 ### 1. Cài đặt thư viện cần thiết
 
 ```bash
-pip install PyQt6 mysqlclient bcrypt darkdetect
+pip install -r requirements.txt
 ```
 
-### 2. Thiết lập MySQL qua XAMPP
+Hoặc cài đặt thủ công:
 
-> ⚠️ Bật MySQL từ XAMPP Control Panel (port mặc định 3306)  
-> Sử dụng `localhost`, user `root`, và password như khai báo trong `DBManager.py`
+```bash
+pip install PyQt6 psycopg2-binary bcrypt darkdetect python-dotenv supabase
+```
+
+### 2. Thiết lập Supabase Database
+
+#### Bước 2.1: Tạo Supabase Project
+
+1. Truy cập https://supabase.com và đăng ký/đăng nhập
+2. Tạo một project mới
+3. Chờ project được khởi tạo (khoảng 2 phút)
+
+#### Bước 2.2: Lấy Database Credentials
+
+1. Vào **Settings** → **Database**
+2. Copy các thông tin sau:
+   - **Host** (ví dụ: `db.xxxxx.supabase.co`)
+   - **Database name** (thường là `postgres`)
+   - **Port** (thường là `5432`)
+   - **User** (thường là `postgres`)
+   - **Password** (password bạn đã đặt khi tạo project)
+
+3. Vào **Settings** → **API** để lấy:
+   - **Project URL** (ví dụ: `https://xxxxx.supabase.co`)
+   - **Anon/Public Key**
+
+#### Bước 2.3: Cấu hình file .env
+
+1. Copy file `.env.example` thành `.env`:
+
+```bash
+cp .env.example .env
+```
+
+2. Mở file `.env` và điền thông tin từ Supabase:
+
+```env
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_KEY=your-anon-key-here
+SUPABASE_DB_PASSWORD=your-database-password
+
+DB_HOST=db.your-project-id.supabase.co
+DB_PORT=5432
+DB_NAME=postgres
+DB_USER=postgres
+DB_PASSWORD=your-database-password
+```
+
+#### Bước 2.4: Tạo Database Schema (Tùy chọn)
+
+Ứng dụng sẽ tự động tạo các bảng khi chạy lần đầu. Nếu muốn tạo thủ công:
+
+1. Vào **SQL Editor** trong Supabase Dashboard
+2. Copy nội dung từ file `supabase_schema.sql`
+3. Paste và chạy SQL script
 
 ### 3. Khởi chạy ứng dụng
 
 ```bash
-python main.py
+python MediManager.py
 ```
+
+> **Lưu ý:** Đảm bảo file `.env` đã được cấu hình đúng trước khi chạy ứng dụng.
 
 ---
 
@@ -126,14 +181,23 @@ File `main.exe` nằm trong thư mục `dist/`. Chạy file này để sử dụ
 
 ---
 
-## Cơ sở dữ liệu
+## Cơ sở dữ liệu - Supabase
 
-Dữ liệu nằm trong schema `medimanager` với các bảng chính:
-- `medicine`, `category`, `supplier`, `stock`, `stock_transaction`
+Ứng dụng sử dụng **Supabase** (PostgreSQL Cloud) với các bảng chính:
+- `medicine`, `supplier`, `stock`
 - `invoice`, `invoice_detail`, `customer`
 - `staff`, `activity_log`
 
-SQL script mẫu: `medimanager.sql`
+**SQL schema**: `supabase_schema.sql`
+
+### Lợi ích của Supabase
+
+- ✅ **Cloud-based**: Không cần cài đặt MySQL/XAMPP local
+- ✅ **Miễn phí tier**: 500MB database, 2GB bandwidth/tháng
+- ✅ **Tự động backup**: Supabase tự động backup dữ liệu
+- ✅ **Bảo mật cao**: SSL/TLS encryption, Row Level Security (RLS)
+- ✅ **Dễ mở rộng**: Có thể nâng cấp lên Pro khi cần
+- ✅ **Dashboard trực quan**: Quản lý database qua web interface
 
 ---
 
