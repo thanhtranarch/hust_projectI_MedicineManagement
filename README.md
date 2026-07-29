@@ -4,9 +4,8 @@
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![PyQt6](https://img.shields.io/badge/PyQt6-6.4.0+-green.svg)
-![SQLite](https://img.shields.io/badge/SQLite-built--in-003B57.svg)
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-orange.svg)
-![Tests](https://img.shields.io/badge/Tests-167%20passing-brightgreen.svg)
+![SQLite](https://img.shields.io/badge/SQLite-3-003B57.svg)
+![Tests](https://img.shields.io/badge/Tests-154%20passing-brightgreen.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
 **Ứng dụng desktop quản lý nhà thuốc: quản lý thuốc, kiểm soát tồn kho, bán hàng và báo cáo doanh thu**
@@ -24,8 +23,6 @@
 - [Tính năng](#tính-năng)
 - [Công nghệ sử dụng](#công-nghệ-sử-dụng)
 - [Cài đặt](#cài-đặt)
-  - [Chế độ SQLite (mặc định)](#chế-độ-sqlite-mặc-định)
-  - [Chế độ PostgreSQL / Supabase](#chế-độ-postgresql--supabase)
 - [Sử dụng](#sử-dụng)
 - [Dữ liệu mẫu](#dữ-liệu-mẫu)
 - [Kiến trúc hệ thống](#kiến-trúc-hệ-thống)
@@ -45,7 +42,7 @@
 ## Giới thiệu
 
 **MediManager** là ứng dụng desktop quản lý nhà thuốc được phát triển bằng **Python** và **PyQt6**,
-sử dụng **cơ sở dữ liệu quan hệ** để quản lý thông tin thuốc, kiểm soát tồn kho,
+sử dụng **cơ sở dữ liệu quan hệ SQLite** để quản lý thông tin thuốc, kiểm soát tồn kho,
 hỗ trợ bán hàng và xuất báo cáo doanh thu.
 
 Hệ thống giúp nhà thuốc theo dõi số lượng thuốc, hạn sử dụng, lịch sử bán hàng và doanh thu,
@@ -60,7 +57,7 @@ và nhà cung cấp.
 | **Trường** | Đại học Bách khoa Hà Nội |
 | **Phiên bản** | 2.0.0 |
 | **Kiến trúc** | Clean Architecture (phân tách UI / Service / Core) |
-| **Cơ sở dữ liệu** | SQLite (mặc định) hoặc PostgreSQL / Supabase |
+| **Cơ sở dữ liệu** | SQLite - một file duy nhất, không cần cài đặt máy chủ |
 
 ---
 
@@ -76,9 +73,9 @@ python run.py
 
 Đăng nhập bằng `admin` / `admin`.
 
-Mặc định ứng dụng dùng SQLite, tự tạo file `data/medimanager.db` và toàn bộ bảng
-ở lần chạy đầu tiên. Muốn dùng PostgreSQL/Supabase thì xem
-[phần cấu hình bên dưới](#chế-độ-postgresql--supabase).
+Toàn bộ dữ liệu nằm trong một file SQLite duy nhất tại `data/medimanager.db`.
+File này cùng tất cả các bảng được **tạo tự động** ở lần chạy đầu tiên — không
+cần cài máy chủ, không cần tài khoản dịch vụ, không cần chạy script SQL nào.
 
 ---
 
@@ -128,29 +125,25 @@ Mặc định ứng dụng dùng SQLite, tự tạo file `data/medimanager.db` v
 
 ## Công nghệ sử dụng
 
-### Ứng dụng
 | Công nghệ | Vai trò | Phiên bản |
 |-----------|---------|-----------|
 | **Python** | Ngôn ngữ lập trình chính | 3.8+ |
 | **PyQt6** | Framework giao diện người dùng | 6.4.0+ |
+| **SQLite** | Cơ sở dữ liệu quan hệ (có sẵn trong Python) | 3 |
 | **Qt Designer** | Thiết kế giao diện dạng `.ui` | — |
 | **bcrypt** | Mã hóa mật khẩu | 4.0.1+ |
 | **reportlab** | Sinh báo cáo PDF | 4.0.0+ |
 | **darkdetect** | Nhận diện theme sáng/tối của hệ thống | 0.8.0+ |
 | **python-dotenv** | Đọc cấu hình từ file `.env` | 1.0.0+ |
+| **pytest** | Bộ khung kiểm thử (chỉ khi phát triển) | 7.4.0+ |
 
-### Cơ sở dữ liệu
-| Công nghệ | Vai trò |
-|-----------|---------|
-| **SQLite** | Backend mặc định, có sẵn trong Python, không cần cài đặt |
-| **PostgreSQL / Supabase** | Backend cho môi trường nhiều máy trạm |
-| **psycopg2-binary** | Driver PostgreSQL (chỉ cần khi dùng PostgreSQL) |
+### Vì sao chọn SQLite
 
-### Kiểm thử
-| Công nghệ | Vai trò |
-|-----------|---------|
-| **pytest** | Bộ khung kiểm thử |
-| **Qt offscreen** | Chạy kiểm thử giao diện không cần màn hình |
+- **Không cần máy chủ** — dữ liệu nằm gọn trong một file, sao lưu chỉ là copy file
+- **Có sẵn trong Python** — không phải cài driver hay dịch vụ ngoài
+- **Chạy được ngay** — giảng viên hoặc người chấm chỉ cần `python run.py`
+- **Đúng quy mô** — một nhà thuốc chạy trên một máy, không cần cơ sở dữ liệu phân tán
+- **Kiểm thử dễ** — mỗi test dùng một file tạm riêng, chạy hoàn toàn offline
 
 ---
 
@@ -180,66 +173,30 @@ pip install -r requirements.txt
 > sudo apt install libegl1 libgl1 libxkbcommon-x11-0 libdbus-1-3 libfontconfig1
 > ```
 
-### Bước 3: Chọn cơ sở dữ liệu
+### Bước 3: Chạy
 
-Ứng dụng **tự động chọn backend**:
-
-| Điều kiện | Backend được dùng |
-|-----------|-------------------|
-| Không có `.env`, hoặc thiếu `DB_HOST` / `DB_PASSWORD` | **SQLite** |
-| Có đủ `DB_HOST` và `DB_PASSWORD` | **PostgreSQL** |
-| Đặt `DB_BACKEND=sqlite` hoặc `DB_BACKEND=postgres` | Theo giá trị chỉ định |
-
-#### Chế độ SQLite (mặc định)
-
-Không cần làm gì cả. Chạy `python run.py` là xong — ứng dụng tự tạo
-`data/medimanager.db` cùng toàn bộ bảng và tài khoản `admin`.
-
-Muốn đổi vị trí file database:
-
-```env
-SQLITE_PATH=duong/dan/toi/medimanager.db
+```bash
+python run.py
 ```
 
-#### Chế độ PostgreSQL / Supabase
+Không có bước cấu hình cơ sở dữ liệu. Ở lần chạy đầu tiên ứng dụng sẽ:
 
-**1. Tạo project Supabase**
+1. Tạo thư mục `data/` và file `data/medimanager.db`
+2. Tạo toàn bộ 11 bảng cùng các index
+3. Nạp dữ liệu tham chiếu (9 danh mục thuốc, 4 hình thức thanh toán)
+4. Tạo tài khoản quản trị `admin` / `admin`
 
-1. Truy cập [supabase.com](https://supabase.com) và đăng nhập
-2. Chọn **New Project**, đặt tên `medimanager`, tạo **Database Password** và chọn
-   region gần nhất (ví dụ Singapore)
-3. Chờ khoảng 2 phút để project khởi tạo
+### Tùy chọn: đổi vị trí file database
 
-**2. Lấy thông tin kết nối**
-
-Vào **Settings → Database → Connection Info** và ghi lại `Host`, `Port`,
-`Database name`, `User`. Mật khẩu là mật khẩu bạn tạo ở bước 1.
-
-**3. Tạo file `.env`**
+Chỉ cần khi bạn muốn lưu database ở chỗ khác (ví dụ ổ đĩa chung, USB):
 
 ```bash
 cp .env.example .env
 ```
 
-Điền vào `.env`:
-
 ```env
-DB_BACKEND=postgres
-DB_HOST=db.xxxxxxxxxxxxx.supabase.co
-DB_PORT=5432
-DB_NAME=postgres
-DB_USER=postgres
-DB_PASSWORD=mat-khau-cua-ban
+SQLITE_PATH=D:/duong-dan/medimanager.db
 ```
-
-**4. Tạo bảng**
-
-- **Tự động** (khuyến nghị): ứng dụng tự tạo toàn bộ bảng ở lần chạy đầu tiên.
-- **Thủ công**: mở **SQL Editor** trên Supabase, dán nội dung `supabase_schema.sql` rồi **Run**.
-
-> Nếu bạn đã có database tạo từ phiên bản cũ, ứng dụng sẽ **tự động bổ sung** các
-> cột mới (`stock.staff_id`, `stock.payment_method_id`, `invoice.payment_method_id`,
-> `payment_method.method_type`, `medicine.unit`) mà không làm mất dữ liệu hiện có.
 
 ---
 
@@ -251,7 +208,7 @@ DB_PASSWORD=mat-khau-cua-ban
 python run.py
 ```
 
-Khi khởi động, ứng dụng in ra backend đang dùng:
+Khi khởi động, ứng dụng in ra vị trí file dữ liệu:
 
 ```
 ============================================================
@@ -289,6 +246,16 @@ Nhà cung cấp  ──►  Nhập kho  ──►  Tồn kho  ──►  Bán h�
 3. **Bán hàng** — từ màn hình chính chọn **Tạo hóa đơn**, nhập số điện thoại
    khách hàng, thêm thuốc và lưu. Tồn kho tự động giảm
 4. **Báo cáo** — nhấn **In báo cáo ngày** để chọn loại báo cáo và xuất PDF
+
+### Sao lưu dữ liệu
+
+Toàn bộ dữ liệu nằm trong một file duy nhất, nên sao lưu chỉ là copy file:
+
+```bash
+cp data/medimanager.db backup/medimanager_$(date +%Y%m%d).db
+```
+
+Khôi phục: chép file sao lưu đè lại vào `data/medimanager.db` khi ứng dụng đã đóng.
 
 ---
 
@@ -332,14 +299,16 @@ Dự án tổ chức theo **Clean Architecture**, tách bạch giao diện, nghi
                         │
 ┌───────────────────────▼──────────────────────────────┐
 │  Core Layer — src/core/                              │
-│  AppContext · DBManager · SqlDialect · schema        │
+│  AppContext · DBManager · schema · sql               │
 └───────────────────────┬──────────────────────────────┘
                         │
 ┌───────────────────────▼──────────────────────────────┐
-│  Infrastructure                                      │
-│  SQLite  ·  PostgreSQL / Supabase                    │
+│  Infrastructure — SQLite (data/medimanager.db)       │
 └──────────────────────────────────────────────────────┘
 ```
+
+Phụ thuộc chỉ đi một chiều từ trên xuống: màn hình có thể gọi service và
+database, nhưng service không bao giờ import màn hình.
 
 ### Các thành phần chính
 
@@ -347,26 +316,21 @@ Dự án tổ chức theo **Clean Architecture**, tách bạch giao diện, nghi
 |------------|-------------|
 | `AppContext` | Giữ kết nối database và phiên đăng nhập, truyền xuống mọi màn hình |
 | `DBManager` | Mở kết nối, thực thi truy vấn, quản lý giao dịch, tạo bảng và migration |
-| `SqlDialect` | Che giấu khác biệt SQL giữa SQLite và PostgreSQL |
 | `schema.py` | **Nguồn định nghĩa duy nhất** của lược đồ dữ liệu |
+| `sql.py` | Các đoạn SQL dùng lại nhiều nơi (ví dụ: tính số ngày còn đến hạn) |
 | `AuthService` | Xác thực, băm mật khẩu, đăng ký tài khoản |
 | `ReportService` | Sinh báo cáo PDF |
 | `BaseWindow` / `BaseDialog` | Nạp file `.ui`, đặt icon, hộp thoại thông báo dùng chung |
 
-### Hỗ trợ hai backend
+### Quản lý giao dịch
 
-Mã nghiệp vụ chỉ viết SQL một lần. `DBManager` xử lý phần khác biệt:
+`DBManager.execute()` **tự động rollback** khi truy vấn lỗi rồi mới ném ngoại lệ.
+Nhờ vậy một câu lệnh sai không để lại giao dịch dở dang làm hỏng các thao tác
+tiếp theo trong cùng phiên làm việc.
 
-| Khác biệt | PostgreSQL | SQLite |
-|-----------|-----------|--------|
-| Tham số truy vấn | `%s` | `?` (tự động chuyển đổi) |
-| Khóa chính tự tăng | `SERIAL PRIMARY KEY` | `INTEGER PRIMARY KEY AUTOINCREMENT` |
-| ID vừa thêm | `SELECT lastval()` | `cursor.lastrowid` |
-| Ngày hôm nay | `CURRENT_DATE` | `date('now','localtime')` |
-| Số ngày còn lại | `col::date - CURRENT_DATE` | `julianday(...) - julianday(...)` |
-
-Nhờ đó việc chuyển giữa máy cá nhân (SQLite) và môi trường nhiều máy trạm
-(PostgreSQL) không cần sửa một dòng mã nghiệp vụ nào.
+Các nghiệp vụ nhiều bước (lập hóa đơn: ghi hóa đơn → ghi chi tiết → trừ tồn kho)
+được gói trong **một giao dịch duy nhất**, nên không thể xảy ra tình trạng tồn kho
+bị trừ trong khi hóa đơn chưa được lưu.
 
 Chi tiết đầy đủ: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
@@ -379,21 +343,21 @@ hust_projectI_MedicineManagement/
 │
 ├── run.py                        # Entry point của ứng dụng
 ├── seed_demo_data.py             # Script nạp dữ liệu mẫu
-├── supabase_schema.sql           # Lược đồ PostgreSQL (sinh từ src/core/schema.py)
 ├── requirements.txt              # Thư viện cho ứng dụng
 ├── requirements-dev.txt          # Thư viện cho phát triển & kiểm thử
 ├── pytest.ini                    # Cấu hình pytest
-├── .env.example                  # Mẫu cấu hình
+├── .env.example                  # Mẫu cấu hình (tùy chọn)
 │
 ├── src/
 │   ├── config/
-│   │   ├── database.py           # Chọn backend, tham số kết nối
+│   │   ├── database.py           # Đường dẫn file database
 │   │   └── settings.py           # Đường dẫn, hằng số ứng dụng
 │   │
 │   ├── core/
 │   │   ├── app_context.py        # Kết nối database + phiên đăng nhập
 │   │   ├── db_manager.py         # Thực thi truy vấn, giao dịch, migration
-│   │   └── schema.py             # Định nghĩa lược đồ (nguồn duy nhất)
+│   │   ├── schema.py             # Định nghĩa lược đồ (nguồn duy nhất)
+│   │   └── sql.py                # Các đoạn SQL dùng chung
 │   │
 │   ├── services/
 │   │   ├── auth_service.py       # Đăng nhập, đăng ký, mã hóa mật khẩu
@@ -409,7 +373,7 @@ hust_projectI_MedicineManagement/
 │       ├── constants.py          # Hằng số dùng chung, thông báo
 │       └── helpers.py            # Định dạng tiền tệ, ngày tháng, kiểm tra dữ liệu
 │
-├── tests/                        # Bộ kiểm thử (167 test case)
+├── tests/                        # Bộ kiểm thử (154 test case)
 │   ├── conftest.py               # Fixture dùng chung
 │   ├── factories.py              # Hàm tạo dữ liệu kiểm thử
 │   ├── test_database.py          # Lược đồ, migration, giao dịch
@@ -417,7 +381,6 @@ hust_projectI_MedicineManagement/
 │   ├── test_workflows.py         # Nhập kho, bán hàng, cảnh báo hạn, doanh thu
 │   ├── test_reports.py           # Sinh báo cáo PDF
 │   ├── test_ui.py                # Kiểm thử giao diện headless
-│   ├── test_postgres.py          # Kiểm thử riêng cho PostgreSQL
 │   └── test_helpers.py           # Hàm tiện ích và cấu hình
 │
 ├── assets/
@@ -426,13 +389,15 @@ hust_projectI_MedicineManagement/
 │
 ├── docs/ARCHITECTURE.md          # Tài liệu kiến trúc chi tiết
 │
-├── data/                         # Database SQLite (tự tạo, không commit)
+├── data/                         # File SQLite (tự tạo, không commit)
 └── exports/                      # Báo cáo PDF xuất ra (tự tạo, không commit)
 ```
 
 ---
 
 ## Cơ sở dữ liệu
+
+Toàn bộ dữ liệu nằm trong **một file SQLite duy nhất**: `data/medimanager.db`.
 
 ### Sơ đồ quan hệ
 
@@ -488,14 +453,17 @@ Dụng cụ y tế · Khác
 
 ### Thay đổi lược đồ
 
-`src/core/schema.py` là **nguồn định nghĩa duy nhất**. Khi cần thêm bảng hoặc cột:
+`src/core/schema.py` là **nguồn định nghĩa duy nhất** — không có file `.sql`
+riêng nào cần giữ đồng bộ. Khi cần thêm bảng hoặc cột:
 
-1. Sửa `TABLES` (bảng mới) hoặc thêm mục vào `MIGRATIONS` (cột mới trên bảng cũ)
-2. Cập nhật `supabase_schema.sql` cho khớp
-3. Chạy `pytest tests/test_database.py` để kiểm tra
+1. Thêm bảng mới vào `TABLES`, hoặc thêm cột mới vào `MIGRATIONS`
+2. Chạy `pytest tests/test_database.py` để kiểm tra
 
-Cách làm này giữ cho SQLite và PostgreSQL luôn đồng bộ, và các database đã triển khai
-trước đó vẫn được cập nhật cột mới mà không mất dữ liệu.
+Vì sao cần `MIGRATIONS`: bảng được tạo bằng `CREATE TABLE IF NOT EXISTS`, câu
+lệnh này **không làm gì** khi bảng đã tồn tại — kể cả khi bảng đang thiếu một cột
+mới thêm. Do đó mỗi lần khởi động, ứng dụng đối chiếu danh sách cột thực tế và
+tự chạy `ALTER TABLE ... ADD COLUMN` cho những cột còn thiếu. File database tạo
+từ phiên bản cũ vẫn dùng được và được bổ sung cột mới mà không mất dữ liệu.
 
 ---
 
@@ -518,8 +486,8 @@ hệ thống tự chuyển sang Helvetica thay vì báo lỗi.
 
 ## Kiểm thử
 
-Bộ kiểm thử gồm **167 test case**, chạy hoàn toàn offline trên SQLite tạm thời
-nên không ảnh hưởng tới dữ liệu thật.
+Bộ kiểm thử gồm **154 test case**. Mỗi test chạy trên một file SQLite tạm riêng
+nên hoàn toàn offline, không ảnh hưởng tới dữ liệu thật và không cần cấu hình gì.
 
 ```bash
 pip install -r requirements-dev.txt
@@ -529,7 +497,7 @@ pytest
 Kết quả mong đợi:
 
 ```
-167 passed
+154 passed
 ```
 
 ### Chạy theo nhóm
@@ -546,26 +514,12 @@ pytest -v                          # xem chi tiết từng test
 
 | Tệp | Nội dung kiểm thử |
 |-----|-------------------|
-| `test_database.py` | Tạo bảng, migration, giao dịch, dữ liệu tham chiếu, dialect SQL |
+| `test_database.py` | Tạo bảng, migration, giao dịch và rollback, dữ liệu tham chiếu, biểu thức ngày tháng |
 | `test_auth.py` | Đăng nhập đúng/sai, nâng cấp mật khẩu cũ sang bcrypt, ràng buộc đăng ký |
 | `test_workflows.py` | Nhập kho cộng tồn, bán hàng trừ tồn, tổng tiền hóa đơn, cảnh báo hạn dùng, tổng hợp doanh thu |
 | `test_reports.py` | Sinh đủ 4 loại PDF, hoạt động cả khi database rỗng, định dạng số liệu |
 | `test_ui.py` | Mở toàn bộ 8 màn hình và 12 hộp thoại, kiểm tra cột bảng khớp tiêu đề |
-| `test_helpers.py` | Định dạng tiền tệ/ngày tháng, kiểm tra email/điện thoại, chọn backend |
-| `test_postgres.py` | Hành vi riêng của PostgreSQL *(bỏ qua nếu không có server)* |
-
-### Kiểm thử trên PostgreSQL
-
-Một số hành vi chỉ tồn tại trên PostgreSQL — điển hình là việc một câu lệnh lỗi
-làm hỏng toàn bộ giao dịch. SQLite không tái hiện được điều này, nên các test đó
-cần một server thật:
-
-```bash
-TEST_PG_HOST=127.0.0.1 TEST_PG_PORT=5432 TEST_PG_NAME=medimanager_test \
-TEST_PG_USER=postgres TEST_PG_PASSWORD=postgres pytest tests/test_postgres.py
-```
-
-Nếu không đặt `TEST_PG_HOST`, nhóm test này được **bỏ qua** (skip) chứ không báo lỗi.
+| `test_helpers.py` | Định dạng tiền tệ/ngày tháng, kiểm tra email/điện thoại, cấu hình |
 
 ### Kiểm thử giao diện không cần màn hình
 
@@ -600,8 +554,8 @@ pyinstaller --onefile --windowed \
 > Trên Windows, dấu phân cách của `--add-data` là `;` thay vì `:`:
 > `--add-data "src/ui/forms;src/ui/forms"`
 
-File thực thi nằm trong thư mục `dist/`. Bản đóng gói dùng SQLite sẽ chạy được
-ngay mà không cần cài đặt gì thêm.
+File thực thi nằm trong thư mục `dist/`. Vì SQLite đã có sẵn trong Python, bản
+đóng gói chạy được ngay trên máy chưa cài gì — chỉ cần copy file `.exe` sang là dùng được.
 
 ---
 
@@ -609,13 +563,13 @@ ngay mà không cần cài đặt gì thêm.
 
 | Hiện tượng | Nguyên nhân & cách xử lý |
 |------------|--------------------------|
-| `Missing required database configuration` | Đang ở chế độ PostgreSQL nhưng thiếu `DB_HOST`/`DB_PASSWORD`. Điền vào `.env`, hoặc đặt `DB_BACKEND=sqlite` để chạy offline |
-| `Failed to connect to the database` | Sai thông tin kết nối, hoặc project Supabase đang tạm dừng. Kiểm tra lại `.env` và trạng thái project |
-| `ModuleNotFoundError: No module named 'psycopg2'` | Chỉ cần khi dùng PostgreSQL: `pip install psycopg2-binary` |
 | `ImportError: libEGL.so.1` (Linux) | Thiếu thư viện hệ thống của Qt: `sudo apt install libegl1 libgl1 libxkbcommon-x11-0` |
+| `Failed to establish database connection` | Không có quyền ghi vào thư mục `data/`. Kiểm tra quyền thư mục, hoặc đặt `SQLITE_PATH` trỏ tới nơi ghi được |
+| `database is locked` | Đang mở file database bằng chương trình khác (DB Browser, một phiên MediManager khác). Đóng bớt rồi thử lại |
 | Báo cáo PDF mất dấu tiếng Việt | Thiếu `assets/fonts/arial.ttf`. Khôi phục file font từ repository |
-| Quên mật khẩu admin | Ở chế độ SQLite: xóa `data/medimanager.db` để tạo lại tài khoản `admin`/`admin` (mất toàn bộ dữ liệu) |
+| Quên mật khẩu admin | Xóa `data/medimanager.db` để tạo lại tài khoản `admin`/`admin` (mất toàn bộ dữ liệu — nên sao lưu trước) |
 | Muốn bắt đầu lại từ đầu | `python seed_demo_data.py --reset` |
+| Muốn xem trực tiếp dữ liệu | Mở `data/medimanager.db` bằng [DB Browser for SQLite](https://sqlitebrowser.org/) |
 
 ---
 
@@ -623,7 +577,7 @@ ngay mà không cần cài đặt gì thêm.
 
 - [x] Kiến trúc phân lớp (Clean Architecture)
 - [x] Mã hóa mật khẩu bằng bcrypt
-- [x] Hỗ trợ hai backend SQLite / PostgreSQL
+- [x] Cơ sở dữ liệu SQLite tự khởi tạo, không cần cấu hình
 - [x] Quản lý nhập kho theo phiếu (header + chi tiết)
 - [x] Cảnh báo hạn sử dụng phân mức
 - [x] Báo cáo doanh thu, tồn kho, hóa đơn, hạn dùng dạng PDF
@@ -632,7 +586,7 @@ ngay mà không cần cài đặt gì thêm.
 - [ ] Phân quyền chi tiết theo chức vụ trên từng màn hình
 - [ ] Biểu đồ thống kê trực quan trên dashboard
 - [ ] Xuất báo cáo dạng Excel
-- [ ] Sao lưu / phục hồi dữ liệu
+- [ ] Sao lưu / phục hồi dữ liệu ngay trong ứng dụng
 - [ ] Hỗ trợ máy quét mã vạch
 
 ---
@@ -653,13 +607,14 @@ ngay mà không cần cài đặt gì thêm.
 - Tuân thủ **PEP 8**
 - Đặt tên bằng tiếng Anh, thông báo hiển thị cho người dùng bằng tiếng Việt
 - Mỗi hàm public cần có docstring
-- Không viết SQL riêng cho từng backend — dùng `db.sql` (`SqlDialect`) khi cú pháp khác nhau
+- Truy vấn dùng tham số `%s` (`DBManager` tự chuyển sang `?` của SQLite) —
+  **không bao giờ** nối chuỗi dữ liệu người dùng vào câu SQL
 - Thay đổi lược đồ phải sửa `src/core/schema.py`, không sửa trực tiếp trong mã màn hình
 
 ### Báo lỗi
 
-Khi tạo issue, vui lòng nêu rõ: backend đang dùng (SQLite hay PostgreSQL),
-phiên bản Python, các bước tái hiện và thông báo lỗi đầy đủ.
+Khi tạo issue, vui lòng nêu rõ: phiên bản Python, hệ điều hành,
+các bước tái hiện và thông báo lỗi đầy đủ.
 
 ---
 

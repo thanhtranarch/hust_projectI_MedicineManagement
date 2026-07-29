@@ -122,37 +122,10 @@ class TestSettings:
 
 
 class TestDatabaseConfig:
-    def test_sqlite_selected_without_server_credentials(self, monkeypatch):
-        monkeypatch.setattr(DatabaseConfig, "DB_BACKEND", "")
-        monkeypatch.setattr(DatabaseConfig, "DB_HOST", None)
-        monkeypatch.setattr(DatabaseConfig, "DB_PASSWORD", None)
-        assert DatabaseConfig.detect_backend() == 'sqlite'
+    def test_default_path_is_inside_the_project(self):
+        assert DatabaseConfig.SQLITE_PATH.endswith('.db')
 
-    def test_postgres_selected_with_server_credentials(self, monkeypatch):
-        monkeypatch.setattr(DatabaseConfig, "DB_BACKEND", "")
-        monkeypatch.setattr(DatabaseConfig, "DB_HOST", "db.example.com")
-        monkeypatch.setattr(DatabaseConfig, "DB_PASSWORD", "secret")
-        assert DatabaseConfig.detect_backend() == 'postgres'
-
-    @pytest.mark.parametrize("value,expected", [
-        ("sqlite", "sqlite"),
-        ("postgres", "postgres"),
-        ("postgresql", "postgres"),
-        ("supabase", "postgres"),
-    ])
-    def test_explicit_backend_wins(self, monkeypatch, value, expected):
-        monkeypatch.setattr(DatabaseConfig, "DB_BACKEND", value)
-        monkeypatch.setattr(DatabaseConfig, "DB_HOST", None)
-        monkeypatch.setattr(DatabaseConfig, "DB_PASSWORD", None)
-        assert DatabaseConfig.detect_backend() == expected
-
-    def test_sqlite_needs_no_configuration(self, monkeypatch):
-        monkeypatch.setattr(DatabaseConfig, "DB_BACKEND", "sqlite")
-        assert DatabaseConfig.validate_config() is True
-
-    def test_postgres_requires_credentials(self, monkeypatch):
-        monkeypatch.setattr(DatabaseConfig, "DB_BACKEND", "postgres")
-        monkeypatch.setattr(DatabaseConfig, "DB_HOST", None)
-        monkeypatch.setattr(DatabaseConfig, "DB_PASSWORD", None)
-        with pytest.raises(ValueError, match="Missing required database configuration"):
-            DatabaseConfig.validate_config()
+    def test_describe_names_the_database_file(self):
+        description = DatabaseConfig.describe()
+        assert 'SQLite' in description
+        assert DatabaseConfig.SQLITE_PATH in description

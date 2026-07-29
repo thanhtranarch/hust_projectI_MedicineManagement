@@ -8,24 +8,18 @@ from .db_manager import DBManager
 class AppContext:
     """Shared state passed to every window and dialog."""
 
-    def __init__(self, staff_id=None, backend=None, database=None):
+    def __init__(self, staff_id=None, database=None):
         """
         Args:
             staff_id: Current logged-in staff ID, if any
-            backend: Force a database backend ('postgres' / 'sqlite')
-            database: SQLite file path override
+            database: Path to the SQLite file, overriding the configured one
         """
         self.staff_id = staff_id
-        self.db_manager = DBManager(backend=backend, database=database)
+        self.db_manager = DBManager(database=database)
         self.connection = self.db_manager.connect()
 
         if not self.connection:
             raise ConnectionError("Failed to establish database connection")
-
-    @property
-    def sql(self):
-        """Backend-specific SQL fragments (date arithmetic, etc.)."""
-        return self.db_manager.sql
 
     def set_user(self, staff_id):
         """Set the currently logged-in user."""

@@ -1,26 +1,9 @@
 """
 Database schema definition - single source of truth.
 
-The same table definitions drive both supported backends, so PostgreSQL
-(Supabase) and SQLite never drift apart. Dialect differences are expressed as
-``{token}`` placeholders that each backend fills in.
+Tables are created from here on first run, so the SQLite file always matches
+what the application expects.
 """
-
-# Dialect-specific fragments used inside the DDL templates below
-DIALECTS = {
-    'postgres': {
-        'serial_pk': 'SERIAL PRIMARY KEY',
-        'timestamp': 'TIMESTAMP',
-        'now': 'CURRENT_TIMESTAMP',
-        'money': 'DECIMAL(12,2)',
-    },
-    'sqlite': {
-        'serial_pk': 'INTEGER PRIMARY KEY AUTOINCREMENT',
-        'timestamp': 'TIMESTAMP',
-        'now': 'CURRENT_TIMESTAMP',
-        'money': 'NUMERIC',
-    },
-}
 
 # Ordered so that foreign keys always reference an already-created table
 TABLES = [
@@ -32,26 +15,26 @@ TABLES = [
             staff_position TEXT DEFAULT 'staff',
             staff_phone TEXT,
             staff_email TEXT,
-            staff_salary {money},
-            hire_date {timestamp} DEFAULT {now},
-            created_at {timestamp} DEFAULT {now},
-            updated_at {timestamp} DEFAULT {now}
+            staff_salary NUMERIC,
+            hire_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """),
 
     ('category', """
         CREATE TABLE IF NOT EXISTS category (
-            category_id {serial_pk},
+            category_id INTEGER PRIMARY KEY AUTOINCREMENT,
             category_name TEXT NOT NULL UNIQUE,
             description TEXT,
-            created_at {timestamp} DEFAULT {now},
-            updated_at {timestamp} DEFAULT {now}
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """),
 
     ('payment_method', """
         CREATE TABLE IF NOT EXISTS payment_method (
-            payment_method_id {serial_pk},
+            payment_method_id INTEGER PRIMARY KEY AUTOINCREMENT,
             payment_name TEXT NOT NULL UNIQUE,
             method_type TEXT NOT NULL DEFAULT 'sale',
             description TEXT
@@ -60,45 +43,45 @@ TABLES = [
 
     ('supplier', """
         CREATE TABLE IF NOT EXISTS supplier (
-            supplier_id {serial_pk},
+            supplier_id INTEGER PRIMARY KEY AUTOINCREMENT,
             supplier_name TEXT,
             contact_name TEXT,
             contact_phone TEXT,
             contact_email TEXT,
             supplier_address TEXT,
             payment_terms TEXT,
-            created_at {timestamp} DEFAULT {now},
-            updated_at {timestamp} DEFAULT {now}
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """),
 
     ('customer', """
         CREATE TABLE IF NOT EXISTS customer (
-            customer_id {serial_pk},
+            customer_id INTEGER PRIMARY KEY AUTOINCREMENT,
             customer_name TEXT,
             customer_phone VARCHAR(11),
             customer_email TEXT,
-            created_at {timestamp} DEFAULT {now},
-            updated_at {timestamp} DEFAULT {now}
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """),
 
     ('medicine', """
         CREATE TABLE IF NOT EXISTS medicine (
-            medicine_id {serial_pk},
+            medicine_id INTEGER PRIMARY KEY AUTOINCREMENT,
             medicine_name TEXT,
             generic_name TEXT,
             brand_name TEXT,
             supplier_id INT REFERENCES supplier(supplier_id),
             category_id INT REFERENCES category(category_id),
-            unit_price {money},
-            sale_price {money},
+            unit_price NUMERIC,
+            sale_price NUMERIC,
             stock_quantity INT DEFAULT 0,
-            expiration_date {timestamp},
+            expiration_date TIMESTAMP,
             batch_number TEXT,
             unit TEXT,
-            created_at {timestamp} DEFAULT {now},
-            updated_at {timestamp} DEFAULT {now}
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """),
 
@@ -106,61 +89,61 @@ TABLES = [
     # the individual medicine lines live in stock_detail.
     ('stock', """
         CREATE TABLE IF NOT EXISTS stock (
-            stock_id {serial_pk},
+            stock_id INTEGER PRIMARY KEY AUTOINCREMENT,
             supplier_id INT REFERENCES supplier(supplier_id),
             staff_id VARCHAR(10) REFERENCES staff(staff_id),
             payment_method_id INT REFERENCES payment_method(payment_method_id),
             note TEXT,
-            created_at {timestamp} DEFAULT {now},
-            updated_at {timestamp} DEFAULT {now}
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """),
 
     ('stock_detail', """
         CREATE TABLE IF NOT EXISTS stock_detail (
-            stock_detail_id {serial_pk},
+            stock_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
             stock_id INT REFERENCES stock(stock_id),
             medicine_id INT REFERENCES medicine(medicine_id),
             quantity INT DEFAULT 0,
-            price {money} DEFAULT 0,
+            price NUMERIC DEFAULT 0,
             batch_number TEXT,
-            expiration_date {timestamp},
+            expiration_date TIMESTAMP,
             note TEXT
         )
     """),
 
     ('invoice', """
         CREATE TABLE IF NOT EXISTS invoice (
-            invoice_id {serial_pk},
-            invoice_date {timestamp} DEFAULT {now},
+            invoice_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            invoice_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             customer_id INT REFERENCES customer(customer_id),
             staff_id VARCHAR(10) REFERENCES staff(staff_id),
             payment_method_id INT REFERENCES payment_method(payment_method_id),
-            total_amount {money} DEFAULT 0,
+            total_amount NUMERIC DEFAULT 0,
             payment_status TEXT DEFAULT 'pending',
-            due_date {timestamp} DEFAULT {now},
-            created_at {timestamp} DEFAULT {now},
-            updated_at {timestamp} DEFAULT {now}
+            due_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """),
 
     ('invoice_detail', """
         CREATE TABLE IF NOT EXISTS invoice_detail (
-            invoice_detail_id {serial_pk},
+            invoice_detail_id INTEGER PRIMARY KEY AUTOINCREMENT,
             invoice_id INT REFERENCES invoice(invoice_id),
             medicine_id INT REFERENCES medicine(medicine_id),
             quantity INT DEFAULT 0,
-            sale_price {money} DEFAULT 0,
-            total_price {money} DEFAULT 0
+            sale_price NUMERIC DEFAULT 0,
+            total_price NUMERIC DEFAULT 0
         )
     """),
 
     ('activity_log', """
         CREATE TABLE IF NOT EXISTS activity_log (
-            log_id {serial_pk},
+            log_id INTEGER PRIMARY KEY AUTOINCREMENT,
             staff_id VARCHAR(10) REFERENCES staff(staff_id),
             action TEXT,
-            log_time {timestamp} DEFAULT {now}
+            log_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     """),
 ]
@@ -211,8 +194,3 @@ CATEGORIES = [
     ('Dụng cụ y tế', 'Vật tư và dụng cụ y tế'),
     ('Khác', 'Các mặt hàng khác'),
 ]
-
-
-def render(sql_template, backend):
-    """Fill dialect tokens in a DDL template for the given backend."""
-    return sql_template.format(**DIALECTS[backend])

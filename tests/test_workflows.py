@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
+from src.core import sql
 from src.utils.constants import EXPIRY_WARNING_DAYS
 from tests.factories import (
     add_invoice, add_medicine, add_stock_entry, add_supplier, first_category_id,
@@ -165,9 +166,9 @@ class TestRevenue:
         add_invoice(db, ids['customer_id'], [(ids['paracetamol'], 5, 2000)], when=today)
         add_invoice(db, ids['customer_id'], [(ids['amoxicillin'], 2, 5000)], when=today)
 
-        day = db.sql.date_of('invoice_date')
         db.execute(
-            f"SELECT COUNT(*), SUM(total_amount) FROM invoice WHERE {day} = %s", (today,)
+            "SELECT COUNT(*), SUM(total_amount) FROM invoice "
+            "WHERE date(invoice_date) = %s", (today,)
         )
         count, total = db.fetchone()
 
@@ -183,8 +184,9 @@ class TestRevenue:
         add_invoice(db, ids['customer_id'], [(ids['paracetamol'], 1, 2000)], when=yesterday)
         add_invoice(db, ids['customer_id'], [(ids['paracetamol'], 1, 2000)], when=today)
 
-        day = db.sql.date_of('invoice_date')
-        db.execute(f"SELECT SUM(total_amount) FROM invoice WHERE {day} = %s", (today,))
+        db.execute(
+            "SELECT SUM(total_amount) FROM invoice WHERE date(invoice_date) = %s", (today,)
+        )
         assert float(db.fetchone()[0]) == 2000
 
     def test_best_selling_medicines_ranked_by_revenue(self, seeded):
@@ -239,7 +241,7 @@ def _ids(db):
 
 def _expiring_names(db, days=EXPIRY_WARNING_DAYS):
     """Run the dashboard's expiry-warning query and return the medicine names."""
-    days_left = db.sql.days_until('expiration_date')
+    days_left = sql.days_until('expiration_date')
     db.execute(f"""
         SELECT medicine_name FROM medicine
         WHERE expiration_date IS NOT NULL

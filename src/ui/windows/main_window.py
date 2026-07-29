@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QLabel, QTableWidgetItem
 from PyQt6.QtCore import QTimer, Qt
 from datetime import datetime
 
+from src.core import sql
 from src.ui.base import BaseWindow
 from src.services import ReportService
 from src.utils.constants import EXPIRY_WARNING_DAYS, URGENT_EXPIRY_DAYS
@@ -126,7 +127,7 @@ class MainWindow(BaseWindow):
     def load_outdate_warning(self):
         """Load expiring medicines warning table"""
         try:
-            days_left = self.context.sql.days_until('expiration_date')
+            days_left = sql.days_until('expiration_date')
             self.db.execute(f"""
                 SELECT medicine_id, medicine_name, stock_quantity, unit, batch_number,
                        expiration_date, {days_left} AS days_left
@@ -160,7 +161,7 @@ class MainWindow(BaseWindow):
                        i.total_amount, i.staff_id, i.payment_status
                 FROM invoice i
                 LEFT JOIN customer c ON i.customer_id = c.customer_id
-                WHERE {self.context.sql.date_of('i.invoice_date')} = {self.context.sql.today}
+                WHERE date(i.invoice_date) = {sql.TODAY}
                 ORDER BY i.invoice_date DESC
             """)
             self._fill_table(self.invoice_daily, [

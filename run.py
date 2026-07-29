@@ -29,14 +29,6 @@ def show_error(title, text, detail=""):
 
 def main():
     """Main application entry point"""
-    try:
-        DatabaseConfig.validate_config()
-    except ValueError as e:
-        print(f"Configuration error: {e}")
-        print("\nEither fix your .env file, or remove DB_BACKEND/DB_HOST "
-              "to fall back to the local SQLite database.")
-        sys.exit(1)
-
     app = QApplication(sys.argv)
     app.setApplicationName(Settings.APP_NAME)
     app.setApplicationVersion(Settings.APP_VERSION)
