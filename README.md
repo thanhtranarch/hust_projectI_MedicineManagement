@@ -565,22 +565,3 @@ Môn học: **PROJECT I**
 
 </div>
 
----
-
-## Cảm ơn
-
-Xin cảm ơn:
-- **Supabase Team** - Cloud PostgreSQL platform tuyệt vời
-- **Riverbank Computing** - PyQt6 framework
-- **Giảng viên môn PROJECT I** - Hướng dẫn và hỗ trợ
-- **Cộng đồng Python Việt Nam** - Nguồn cảm hứng và kiến thức
-
----
-
-<div align="center">
-
-**Nếu bạn thấy dự án hữu ích, hãy cho một Star nhé!**
-
-Made with by [Trần Tiến Thạnh](https://github.com/thanhtranarch)
-
-</div>

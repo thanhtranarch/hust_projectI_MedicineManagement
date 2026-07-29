@@ -32,6 +32,7 @@ DATETIME_FORMAT_DATABASE = "%Y-%m-%d %H:%M:%S"
 
 # Expiry Warning Days
 EXPIRY_WARNING_DAYS = 60  # Warn when medicine expires within 60 days
+URGENT_EXPIRY_DAYS = 30   # Escalate the warning within 30 days
 
 # Table Column Names (for consistency)
 TABLE_HEADERS = {

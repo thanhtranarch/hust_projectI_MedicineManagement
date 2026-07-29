@@ -31,8 +31,7 @@ class Settings:
     @staticmethod
     def get_icon_path(theme='dark'):
         """Get application icon path based on theme"""
-        icon_name = f"app_icon_{theme}.ico"
-        return os.path.join(Settings.ICONS_DIR, icon_name)
+        return os.path.join(Settings.ICONS_DIR, f"app_icon_{theme}.png")
 
     @staticmethod
     def get_ui_file(filename):

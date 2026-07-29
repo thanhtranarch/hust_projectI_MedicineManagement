@@ -3,13 +3,14 @@ Login dialog window
 """
 
 import os
-import bcrypt
-from PyQt6.QtWidgets import QLineEdit, QToolButton, QMessageBox
-from PyQt6.QtGui import QIcon
-from PyQt6.QtCore import Qt, QTimer
 
+from PyQt6.QtCore import Qt, QTimer
+from PyQt6.QtGui import QIcon
+from PyQt6.QtWidgets import QLineEdit, QToolButton
+
+from src.services import AuthService
 from src.ui.base import BaseDialog
-from src.utils.constants import MSG_LOGIN_SUCCESS, MSG_LOGIN_FAILED
+from src.utils.constants import MSG_LOGIN_FAILED, MSG_LOGIN_SUCCESS
 
 
 class LoginDialog(BaseDialog):
@@ -24,6 +25,7 @@ class LoginDialog(BaseDialog):
         """
         super().__init__(context, 'login.ui', 'MediManager - Login')
 
+        self.auth_service = AuthService(context)
         self.main_window = None
 
         # Setup UI
@@ -68,75 +70,20 @@ class LoginDialog(BaseDialog):
         username = self.login_user.text().strip()
         password = self.login_password.text()
 
-        # Validate input
         if not username or not password:
             self.show_warning("Please enter username and password")
             return
 
         try:
-            # Query user from database
-            sql = 'SELECT staff_id, staff_psw FROM staff WHERE staff_id = %s'
-            self.db.execute(sql, (username,))
-            result = self.db.fetchone()
-
-            if not result:
-                self.show_warning(MSG_LOGIN_FAILED)
-                return
-
-            staff_id, stored_password = result
-            login_success = self._verify_password(password, stored_password, staff_id)
-
-            if login_success:
-                self._handle_successful_login(staff_id)
-            else:
-                self.show_warning(MSG_LOGIN_FAILED)
-
+            staff_id = self.auth_service.authenticate(username, password)
         except Exception as e:
-            self.show_error(f"Login error: {str(e)}")
+            self.show_error(f"Login error: {e}")
+            return
 
-    def _verify_password(self, input_password, stored_password, staff_id):
-        """
-        Verify password with bcrypt, with fallback for legacy passwords
-
-        Args:
-            input_password: User input password
-            stored_password: Stored password hash
-            staff_id: Staff ID for updating legacy passwords
-
-        Returns:
-            bool: True if password is correct
-        """
-        try:
-            # Try bcrypt verification
-            if bcrypt.checkpw(input_password.encode('utf-8'), stored_password.encode('utf-8')):
-                return True
-        except (ValueError, AttributeError):
-            # Not a bcrypt hash - check if it's a legacy plain-text password
-            if input_password == stored_password:
-                # Auto-upgrade to bcrypt
-                self._upgrade_password(staff_id, input_password)
-                return True
-
-        return False
-
-    def _upgrade_password(self, staff_id, plain_password):
-        """
-        Upgrade legacy plain-text password to bcrypt hash
-
-        Args:
-            staff_id: Staff ID
-            plain_password: Plain text password
-        """
-        try:
-            new_hash = bcrypt.hashpw(plain_password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-            self.db.execute(
-                "UPDATE staff SET staff_psw = %s WHERE staff_id = %s",
-                (new_hash, staff_id)
-            )
-            self.db.commit()
-            print(f"Auto-upgraded password for user: {staff_id}")
-        except Exception as e:
-            print(f"Failed to upgrade password: {e}")
+        if staff_id:
+            self._handle_successful_login(staff_id)
+        else:
+            self.show_warning(MSG_LOGIN_FAILED)
 
     def _handle_successful_login(self, staff_id):
         """

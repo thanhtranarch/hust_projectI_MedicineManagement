@@ -47,7 +47,7 @@ class CreateInvoiceDialog(BaseDialog):
             sql = """
                 SELECT payment_method_id, payment_name
                 FROM payment_method
-                WHERE payment_method_id IN (3, 4)
+                WHERE method_type = 'sale'
                 ORDER BY payment_name
             """
             self.db.execute(sql)
@@ -63,8 +63,44 @@ class CreateInvoiceDialog(BaseDialog):
         except Exception as e:
             self.show_error(f"Error loading payment methods: {e}")
 
+    def _set_customer(self, customer_id, label, valid=True):
+        """Update the selected customer and the phone field's status colour."""
+        self.customer_id = customer_id
+        self.label_6.setText(label)
+        self.customer_phone.setStyleSheet(
+            "background-color: #eaffea;" if valid else "background-color: #ffeaea;"
+        )
+
+    def _find_customer_by_phone(self, phone):
+        """Return (customer_id, customer_name) for a phone number, or None."""
+        self.db.execute(
+            "SELECT customer_id, customer_name FROM customer WHERE customer_phone = %s",
+            (phone,)
+        )
+        return self.db.fetchone()
+
+    def _insert_customer(self, name, phone):
+        """Create a customer and select them. Returns True on success."""
+        try:
+            self.db.execute(
+                "INSERT INTO customer (customer_name, customer_phone) VALUES (%s, %s)",
+                (name, phone)
+            )
+            customer_id = self.db.last_insert_id()
+            self.db.commit()
+
+            self._set_customer(customer_id, f"{name} ({phone})")
+            self.log_action(f"Added new customer: {name} - {phone}")
+            self.show_success(f"Customer {name} added successfully")
+            return True
+        except Exception as e:
+            self.db.rollback()
+            self.show_error(f"Error adding customer: {e}")
+            self._set_customer(None, "Could not add customer", valid=False)
+            return False
+
     def lookup_customer(self):
-        """Lookup customer by phone number"""
+        """Look up the customer by phone, offering to create one if unknown."""
         phone = self.customer_phone.text().strip()
 
         if not phone:
@@ -74,107 +110,43 @@ class CreateInvoiceDialog(BaseDialog):
             return
 
         try:
-            self.db.execute(
-                "SELECT customer_id, customer_name FROM customer WHERE customer_phone = %s",
-                (phone,)
-            )
-            result = self.db.fetchone()
-
-            if result:
-                # Customer found
-                self.customer_id = result[0]
-                self.label_6.setText(f"{result[1]} ({phone})")
-                self.customer_phone.setStyleSheet("background-color: #eaffea;")
-            else:
-                # Customer not found - prompt to create
-                self.prompt_create_customer(phone)
-
+            result = self._find_customer_by_phone(phone)
         except Exception as e:
             self.show_error(f"Error looking up customer: {e}")
+            return
 
-    def prompt_create_customer(self, phone):
-        """Prompt user to create new customer"""
+        if result:
+            self._set_customer(result[0], f"{result[1]} ({phone})")
+            return
+
         name, ok = QInputDialog.getText(
             self, "Add Customer",
             f"Phone {phone} not found. Enter customer name:"
         )
-
         if ok and name.strip():
-            try:
-                # Insert new customer
-                self.db.execute(
-                    "INSERT INTO customer (customer_name, customer_phone) VALUES (%s, %s)",
-                    (name.strip(), phone)
-                )
-                self.db.commit()
-
-                # Get new customer ID
-                self.db.execute(
-                    "SELECT customer_id FROM customer WHERE customer_phone = %s",
-                    (phone,)
-                )
-                self.customer_id = self.db.fetchone()[0]
-
-                self.label_6.setText(f"{name.strip()} ({phone})")
-                self.customer_phone.setStyleSheet("background-color: #eaffea;")
-                self.log_action(f"Added new customer: {name.strip()} - {phone}")
-                self.show_success(f"Customer {name.strip()} added successfully")
-
-            except Exception as e:
-                self.db.rollback()
-                self.show_error(f"Error adding customer: {e}")
-                self.customer_id = None
-                self.customer_phone.setStyleSheet("background-color: #ffeaea;")
+            self._insert_customer(name.strip(), phone)
         else:
-            self.customer_id = None
-            self.label_6.setText("Customer name required")
-            self.customer_phone.setStyleSheet("background-color: #ffeaea;")
+            self._set_customer(None, "Customer name required", valid=False)
 
     def create_new_customer(self):
-        """Create new customer from button click"""
+        """Create a customer from the dedicated button."""
         phone = self.customer_phone.text().strip()
 
         if not phone:
             self.show_warning("Please enter phone number first")
             return
 
-        # Check if customer already exists
         try:
-            self.db.execute(
-                "SELECT customer_id FROM customer WHERE customer_phone = %s",
-                (phone,)
-            )
-            if self.db.fetchone():
+            if self._find_customer_by_phone(phone):
                 self.show_warning("This phone number already exists")
                 return
-
-            # Prompt for name
-            name, ok = QInputDialog.getText(
-                self, "Add Customer", "Enter customer name:"
-            )
-
-            if ok and name.strip():
-                self.db.execute(
-                    "INSERT INTO customer (customer_name, customer_phone) VALUES (%s, %s)",
-                    (name.strip(), phone)
-                )
-                self.db.commit()
-
-                # Get new customer ID
-                self.db.execute(
-                    "SELECT customer_id FROM customer WHERE customer_phone = %s",
-                    (phone,)
-                )
-                self.customer_id = self.db.fetchone()[0]
-
-                self.label_6.setText(f"{name.strip()} ({phone})")
-                self.customer_phone.setStyleSheet("background-color: #eaffea;")
-                self.log_action(f"Added new customer: {name.strip()} - {phone}")
-                self.show_success(f"Customer {name.strip()} added successfully")
-
         except Exception as e:
-            self.db.rollback()
-            self.show_error(f"Error adding customer: {e}")
+            self.show_error(f"Error looking up customer: {e}")
+            return
+
+        name, ok = QInputDialog.getText(self, "Add Customer", "Enter customer name:")
+        if ok and name.strip():
+            self._insert_customer(name.strip(), phone)
 
     def show_add_medicine_dialog(self):
         """Show dialog to select and add medicine to cart"""
@@ -291,25 +263,20 @@ class CreateInvoiceDialog(BaseDialog):
 
             # Get form data
             payment_method_id = self.payment_term.currentData()
-            invoice_date = self.invoice_date.date().toString("yyyy-MM-dd")
             staff_id = self.context.staff_id
-            total = self.sum_money.text()
+            total = sum(med[5] for med in self.medicine_list)
 
-            # Insert invoice
+            # invoice_date is left out so the column default records the real
+            # time of sale, not just the date.
             sql = """
-                INSERT INTO invoice (invoice_date, customer_id, staff_id,
-                                    total_amount, payment_method_id, payment_status)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                INSERT INTO invoice (customer_id, staff_id, total_amount,
+                                     payment_method_id, payment_status)
+                VALUES (%s, %s, %s, %s, %s)
             """
             self.db.execute(sql, (
-                invoice_date, self.customer_id, staff_id,
-                total, payment_method_id, "Đã thanh toán"
+                self.customer_id, staff_id, total, payment_method_id, "Đã thanh toán"
             ))
-            self.db.commit()
-
-            # Get invoice ID (PostgreSQL)
-            self.db.execute("SELECT lastval()")
-            invoice_id = self.db.fetchone()[0]
+            invoice_id = self.db.last_insert_id()
 
             # Insert invoice details and update stock
             for med in self.medicine_list:

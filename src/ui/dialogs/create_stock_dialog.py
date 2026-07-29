@@ -69,7 +69,7 @@ class CreateStockDialog(BaseDialog):
             sql = """
                 SELECT payment_method_id, payment_name
                 FROM payment_method
-                WHERE payment_name IN ('COD', 'prepayment')
+                WHERE method_type = 'purchase'
                 ORDER BY payment_name
             """
             self.db.execute(sql)
@@ -197,11 +197,8 @@ class CreateStockDialog(BaseDialog):
             VALUES (%s, %s, %s, %s)
         """
         self.db.execute(sql, (supplier_id, staff_id, payment_method_id, stock_date))
+        stock_id = self.db.last_insert_id()
         self.db.commit()
-
-        # Get last insert ID (PostgreSQL)
-        self.db.execute("SELECT lastval()")
-        stock_id = self.db.fetchone()[0]
         return stock_id
 
     def insert_or_update_medicine(self, medicine_name, supplier_id, quantity,
@@ -237,11 +234,8 @@ class CreateStockDialog(BaseDialog):
             """
             self.db.execute(sql, (medicine_name, supplier_id, quantity,
                                  price, sale_price, batch, exp_date))
+            medicine_id = self.db.last_insert_id()
             self.db.commit()
-
-            # Get last insert ID
-            self.db.execute("SELECT lastval()")
-            medicine_id = self.db.fetchone()[0]
 
         return medicine_id
 

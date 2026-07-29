@@ -8,86 +8,68 @@ Version: 2.0.0
 """
 
 import sys
-import os
-
-# Add src directory to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from PyQt6.QtWidgets import QApplication, QMessageBox
-from src.config import Settings, DatabaseConfig
+
+from src.config import DatabaseConfig, Settings
 from src.core import AppContext
 from src.ui.dialogs import LoginDialog
 
 
+def show_error(title, text, detail=""):
+    """Display a blocking error dialog."""
+    msg = QMessageBox()
+    msg.setIcon(QMessageBox.Icon.Critical)
+    msg.setWindowTitle(title)
+    msg.setText(text)
+    if detail:
+        msg.setInformativeText(detail)
+    msg.exec()
+
+
 def main():
     """Main application entry point"""
-
-    # Validate database configuration
     try:
         DatabaseConfig.validate_config()
     except ValueError as e:
-        print(f"❌ Configuration Error: {e}")
-        print("\n📝 Please follow these steps:")
-        print("1. Copy .env.example to .env")
-        print("2. Fill in your Supabase credentials in .env file")
-        print("3. Run the application again")
+        print(f"Configuration error: {e}")
+        print("\nEither fix your .env file, or remove DB_BACKEND/DB_HOST "
+              "to fall back to the local SQLite database.")
         sys.exit(1)
 
-    # Create Qt Application
     app = QApplication(sys.argv)
     app.setApplicationName(Settings.APP_NAME)
     app.setApplicationVersion(Settings.APP_VERSION)
 
-    # Show startup message
     print("=" * 60)
     print(f"  {Settings.APP_NAME} v{Settings.APP_VERSION}")
     print(f"  {Settings.APP_AUTHOR}")
     print("=" * 60)
-    print()
+    print(f"Database: {DatabaseConfig.describe()}")
 
     try:
-        # Create application context
-        print("🔌 Connecting to Supabase...")
         context = AppContext()
-        print("✅ Connected to database successfully!")
-        print()
+        print("Connected to database.")
 
-        # Show login window
-        print("🚀 Starting application...")
         login_window = LoginDialog(context)
         login_window.show()
 
-        # Run application event loop
         sys.exit(app.exec())
 
     except ConnectionError as e:
-        print(f"❌ Database Connection Error: {e}")
-        print("\n📝 Please check your .env configuration")
-
-        # Show error dialog
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Critical)
-        msg.setWindowTitle("Connection Error")
-        msg.setText("Failed to connect to database")
-        msg.setInformativeText(str(e))
-        msg.setDetailedText("Please check your .env file configuration.")
-        msg.exec()
-
+        print(f"Database connection error: {e}")
+        show_error(
+            "Connection Error",
+            "Failed to connect to the database",
+            f"{DatabaseConfig.describe()}\n\n{e}",
+        )
         sys.exit(1)
 
     except Exception as e:
-        print(f"❌ Fatal Error: {e}")
+        print(f"Fatal error: {e}")
         import traceback
         traceback.print_exc()
-
-        # Show error dialog
-        msg = QMessageBox()
-        msg.setIcon(QMessageBox.Icon.Critical)
-        msg.setWindowTitle("Error")
-        msg.setText("Application failed to start")
-        msg.setInformativeText(str(e))
-        msg.exec()
-
+        show_error("Error", "Application failed to start", str(e))
         sys.exit(1)
 
 
