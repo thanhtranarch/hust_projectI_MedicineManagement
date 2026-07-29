@@ -66,3 +66,4 @@ exports/*.xlsx
 # Local SQLite database
 data/
 *.db-journal
+.pytest_cache/

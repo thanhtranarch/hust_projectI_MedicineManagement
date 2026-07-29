@@ -2,7 +2,7 @@
 Main application window - Dashboard and navigation hub
 """
 
-from PyQt6.QtWidgets import QLabel, QTableWidgetItem, QMessageBox
+from PyQt6.QtWidgets import QLabel, QTableWidgetItem
 from PyQt6.QtCore import QTimer, Qt
 from datetime import datetime
 

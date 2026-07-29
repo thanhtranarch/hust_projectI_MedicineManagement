@@ -11,8 +11,7 @@ import pytest
 
 from src.utils.constants import EXPIRY_WARNING_DAYS
 from tests.factories import (
-    add_customer, add_invoice, add_medicine, add_stock_entry, add_supplier,
-    first_category_id,
+    add_invoice, add_medicine, add_stock_entry, add_supplier, first_category_id,
 )
 
 

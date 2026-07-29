@@ -85,13 +85,19 @@ class TestReportGeneration:
 class TestFormatting:
     @pytest.mark.parametrize("value,expected", [
         (0, "0"),
-        (1000, "1,000"),
-        (1234567, "1,234,567"),
+        (1000, "1.000"),
+        (1234567, "1.234.567"),
         (None, "0"),
-        (2500.6, "2,501"),
+        (2500.6, "2.501"),
     ])
     def test_money_formatting(self, value, expected):
+        """Vietnamese convention: dot separates thousands."""
         assert _money(value) == expected
+
+    def test_money_matches_ui_currency_formatting(self):
+        """Reports and on-screen tables must not disagree on number format."""
+        from src.utils.helpers import format_currency
+        assert format_currency(1234567).startswith(_money(1234567))
 
     def test_money_handles_non_numeric(self):
         assert _money("abc") == "abc"

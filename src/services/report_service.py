@@ -49,9 +49,13 @@ def _font():
 
 
 def _money(value):
-    """Format a number as Vietnamese currency without a symbol."""
+    """
+    Format a number the Vietnamese way: dot as the thousands separator.
+
+    The currency symbol is left off - report headers already name the unit.
+    """
     try:
-        return f"{float(value or 0):,.0f}"
+        return f"{float(value or 0):,.0f}".replace(',', '.')
     except (TypeError, ValueError):
         return str(value or '')
 

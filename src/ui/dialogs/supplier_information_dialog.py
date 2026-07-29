@@ -2,7 +2,7 @@
 Supplier information detail dialog with edit capability
 """
 
-from PyQt6.QtWidgets import QDialogButtonBox, QMessageBox
+from PyQt6.QtWidgets import QDialogButtonBox
 
 from src.ui.base import BaseDialog
 from src.utils.constants import MSG_SUCCESS_UPDATE, MSG_ERROR_UPDATE
