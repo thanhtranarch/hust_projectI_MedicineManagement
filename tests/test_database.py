@@ -4,7 +4,7 @@ Tests for the database layer: schema, migrations and transaction handling.
 
 import pytest
 
-from src.core import schema
+from src.core import schema, sql
 from src.core.db_manager import DBManager
 
 
@@ -27,11 +27,9 @@ class TestSchema:
     def test_schema_definition_covers_expected_tables(self):
         assert {name for name, _ in schema.TABLES} == EXPECTED_TABLES
 
-    def test_ddl_renders_for_every_backend(self):
-        for backend in schema.DIALECTS:
-            for name, ddl in schema.TABLES:
-                rendered = schema.render(ddl, backend)
-                assert '{' not in rendered, f"unfilled token in {name}/{backend}"
+    def test_every_table_ddl_names_its_table(self):
+        for name, ddl in schema.TABLES:
+            assert f"CREATE TABLE IF NOT EXISTS {name}" in ddl
 
     def test_payment_methods_seeded_for_both_flows(self, db):
         db.execute("SELECT method_type, COUNT(*) FROM payment_method GROUP BY method_type")
@@ -48,7 +46,7 @@ class TestSchema:
 
         counts = []
         for _ in range(2):
-            manager = DBManager(backend='sqlite', database=path)
+            manager = DBManager(database=path)
             manager.connect()
             manager.execute("SELECT COUNT(*) FROM category")
             counts.append(manager.fetchone()[0])
@@ -66,14 +64,14 @@ class TestMigrations:
         """A database created without a newer column gains it on next connect."""
         path = str(tmp_path / "old.db")
 
-        manager = DBManager(backend='sqlite', database=path)
+        manager = DBManager(database=path)
         manager.connect()
         manager.execute("ALTER TABLE stock DROP COLUMN note")
         manager.commit()
         assert 'note' not in manager._existing_columns('stock')
         manager.close()
 
-        manager = DBManager(backend='sqlite', database=path)
+        manager = DBManager(database=path)
         manager.connect()
         assert 'note' in manager._existing_columns('stock')
         manager.close()
@@ -91,6 +89,39 @@ class TestTransactions:
             db.execute("SELECT * FROM table_that_does_not_exist")
 
         db.execute("SELECT COUNT(*) FROM staff")
+        assert db.fetchone()[0] == 1
+
+    def test_failed_query_discards_uncommitted_work(self, db):
+        """
+        execute() rolls back on error, so a multi-step operation cannot leave
+        half its writes behind when a later step fails.
+
+        This is what keeps an invoice from being saved when the stock update
+        that follows it blows up.
+        """
+        db.execute(
+            "INSERT INTO customer (customer_name, customer_phone) VALUES (%s, %s)",
+            ("Dở dang", "0900000001")
+        )
+
+        with pytest.raises(Exception):
+            db.execute("INSERT INTO customer (nonexistent_column) VALUES (%s)", (1,))
+
+        db.execute("SELECT COUNT(*) FROM customer WHERE customer_phone = %s", ("0900000001",))
+        assert db.fetchone()[0] == 0, "the earlier insert should have been rolled back"
+
+    def test_committed_work_survives_a_later_failure(self, db):
+        """Rolling back on error must not undo anything already committed."""
+        db.execute(
+            "INSERT INTO customer (customer_name, customer_phone) VALUES (%s, %s)",
+            ("Đã lưu trước", "0900000002")
+        )
+        db.commit()
+
+        with pytest.raises(Exception):
+            db.execute("SELECT * FROM table_that_does_not_exist")
+
+        db.execute("SELECT COUNT(*) FROM customer WHERE customer_phone = %s", ("0900000002",))
         assert db.fetchone()[0] == 1
 
     def test_rollback_discards_uncommitted_changes(self, db):
@@ -122,31 +153,27 @@ class TestTransactions:
         assert db.fetchone()[0] == "NCC Test"
 
 
-class TestDialect:
-    def test_placeholders_translated_for_sqlite(self, db):
-        assert db._translate("SELECT %s") == "SELECT ?"
+class TestSqlFragments:
+    def test_placeholders_translated_to_sqlite_style(self, db):
+        assert db._translate("SELECT %s WHERE x = %s") == "SELECT ? WHERE x = ?"
 
-    def test_placeholders_untouched_for_postgres(self):
-        manager = DBManager(backend='postgres')
-        assert manager._translate("SELECT %s") == "SELECT %s"
+    def test_today_matches_current_date(self, db):
+        from datetime import date
 
-    @pytest.mark.parametrize("backend", ["postgres", "sqlite"])
-    def test_dialect_expressions_are_non_empty(self, backend):
-        dialect = DBManager(backend=backend).sql
-        assert dialect.today
-        assert dialect.date_of('col')
-        assert dialect.days_until('col')
+        db.execute(f"SELECT {sql.TODAY}")
+        assert db.fetchone()[0] == date.today().isoformat()
 
-    def test_days_until_computes_real_dates(self, db):
+    @pytest.mark.parametrize("offset", [-30, 0, 10, 365])
+    def test_days_until_computes_real_dates(self, db, offset):
         from tests.factories import add_medicine
 
-        add_medicine(db, "Sắp hết hạn", expires_in_days=10)
+        add_medicine(db, "Thuốc", expires_in_days=offset, batch=f"LOT{offset}")
         db.execute(
-            f"SELECT {db.sql.days_until('expiration_date')} FROM medicine "
-            "WHERE medicine_name = %s",
-            ("Sắp hết hạn",)
+            f"SELECT {sql.days_until('expiration_date')} FROM medicine "
+            "WHERE batch_number = %s",
+            (f"LOT{offset}",)
         )
-        assert db.fetchone()[0] == 10
+        assert db.fetchone()[0] == offset
 
 
 class TestActivityLog:

@@ -11,6 +11,7 @@ from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen import canvas
 
 from src.config.settings import Settings
+from src.core import sql
 from src.utils.constants import EXPIRY_WARNING_DAYS
 
 # Page layout constants (points, A4 portrait)
@@ -183,12 +184,12 @@ class ReportService:
         """All invoices issued on a given day."""
         date = date or datetime.now().strftime('%Y-%m-%d')
 
-        self.db.execute(f"""
+        self.db.execute("""
             SELECT i.invoice_id, i.invoice_date, c.customer_name,
                    i.staff_id, i.total_amount, i.payment_status
             FROM invoice i
             LEFT JOIN customer c ON i.customer_id = c.customer_id
-            WHERE {self.db.sql.date_of('i.invoice_date')} = %s
+            WHERE date(i.invoice_date) = %s
             ORDER BY i.invoice_date DESC
         """, (date,))
         results = self.db.fetchall()
@@ -221,7 +222,7 @@ class ReportService:
 
     def export_expiry_warning_report(self, days=EXPIRY_WARNING_DAYS):
         """Medicines expiring within the warning window."""
-        days_left = self.db.sql.days_until('expiration_date')
+        days_left = sql.days_until('expiration_date')
         self.db.execute(f"""
             SELECT medicine_name, stock_quantity, unit, batch_number,
                    expiration_date, {days_left} AS days_left
@@ -271,22 +272,21 @@ class ReportService:
         start_date = start_date or today.replace(day=1).strftime('%Y-%m-%d')
         end_date = end_date or today.strftime('%Y-%m-%d')
 
-        invoice_day = self.db.sql.date_of('invoice_date')
-        self.db.execute(f"""
-            SELECT {invoice_day} AS day, COUNT(*), SUM(total_amount)
+        self.db.execute("""
+            SELECT date(invoice_date) AS day, COUNT(*), SUM(total_amount)
             FROM invoice
-            WHERE {invoice_day} BETWEEN %s AND %s
-            GROUP BY {invoice_day}
+            WHERE date(invoice_date) BETWEEN %s AND %s
+            GROUP BY date(invoice_date)
             ORDER BY day
         """, (start_date, end_date))
         daily = self.db.fetchall()
 
-        self.db.execute(f"""
+        self.db.execute("""
             SELECT m.medicine_name, SUM(d.quantity), SUM(d.total_price)
             FROM invoice_detail d
             JOIN invoice i ON d.invoice_id = i.invoice_id
             JOIN medicine m ON d.medicine_id = m.medicine_id
-            WHERE {self.db.sql.date_of('i.invoice_date')} BETWEEN %s AND %s
+            WHERE date(i.invoice_date) BETWEEN %s AND %s
             GROUP BY m.medicine_name
             ORDER BY SUM(d.total_price) DESC
         """, (start_date, end_date))

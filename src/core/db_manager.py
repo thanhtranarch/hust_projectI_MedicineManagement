@@ -1,33 +1,23 @@
 """
-Database manager - connection handling and query execution.
+Database manager - SQLite connection handling and query execution.
 
-Supports two backends:
-  * ``postgres`` - Supabase / any PostgreSQL server (production)
-  * ``sqlite``   - a local file, needs no configuration (demo, offline, tests)
-
-The backend is chosen automatically from the environment, so application code
-never has to care which one is in use.
+The database is a single local file, created automatically on first run, so
+the application needs no server and no configuration.
 """
 
+import datetime
 import os
 import sqlite3
-import datetime
 
 import bcrypt
-from dotenv import load_dotenv
 
 from src.config.database import DatabaseConfig
 from src.config.settings import Settings
 from src.core import schema
 
-load_dotenv()
 
-POSTGRES = 'postgres'
-SQLITE = 'sqlite'
-
-
-def _register_sqlite_converters():
-    """Return TIMESTAMP/DATE columns as datetime objects, like psycopg2 does."""
+def _register_converters():
+    """Return TIMESTAMP/DATE columns as datetime objects rather than strings."""
     def parse_timestamp(raw):
         text = raw.decode()
         for fmt in ("%Y-%m-%d %H:%M:%S.%f", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d"):
@@ -49,44 +39,18 @@ def _register_sqlite_converters():
     sqlite3.register_adapter(datetime.datetime, lambda d: d.isoformat(sep=' '))
 
 
-_register_sqlite_converters()
-
-
-class SqlDialect:
-    """SQL fragments that differ between backends."""
-
-    def __init__(self, backend):
-        self.backend = backend
-
-    @property
-    def today(self):
-        """Expression for today's date."""
-        return "CURRENT_DATE" if self.backend == POSTGRES else "date('now','localtime')"
-
-    def date_of(self, column):
-        """Truncate a timestamp column to a date."""
-        return f"DATE({column})" if self.backend == POSTGRES else f"date({column})"
-
-    def days_until(self, column):
-        """Whole days from today until the given timestamp column."""
-        if self.backend == POSTGRES:
-            return f"({column}::date - CURRENT_DATE)"
-        return (f"CAST(julianday(date({column})) - "
-                f"julianday(date('now','localtime')) AS INTEGER)")
+_register_converters()
 
 
 class DBManager:
     """Owns the database connection and executes queries against it."""
 
-    def __init__(self, backend=None, database=None):
+    def __init__(self, database=None):
         """
         Args:
-            backend: 'postgres', 'sqlite' or None to auto-detect.
-            database: SQLite file path. Ignored by the postgres backend.
+            database: Path to the SQLite file. Defaults to the configured path.
         """
-        self.backend = backend or DatabaseConfig.detect_backend()
         self.database = database or DatabaseConfig.SQLITE_PATH
-        self.sql = SqlDialect(self.backend)
         self.connection = None
         self.cursor = None
 
@@ -97,15 +61,11 @@ class DBManager:
     def connect(self):
         """Open the connection and make sure the schema is present."""
         try:
-            if self.backend == POSTGRES:
-                import psycopg2
-                self.connection = psycopg2.connect(**DatabaseConfig.get_connection_params())
-            else:
-                os.makedirs(os.path.dirname(os.path.abspath(self.database)), exist_ok=True)
-                self.connection = sqlite3.connect(
-                    self.database, detect_types=sqlite3.PARSE_DECLTYPES
-                )
-                self.connection.execute("PRAGMA foreign_keys = ON")
+            os.makedirs(os.path.dirname(os.path.abspath(self.database)), exist_ok=True)
+            self.connection = sqlite3.connect(
+                self.database, detect_types=sqlite3.PARSE_DECLTYPES
+            )
+            self.connection.execute("PRAGMA foreign_keys = ON")
 
             self.cursor = self.connection.cursor()
             self.setup_database()
@@ -131,18 +91,17 @@ class DBManager:
     # Query execution
     # ------------------------------------------------------------------
 
-    def _translate(self, query):
-        """psycopg2 uses %s placeholders; sqlite3 uses ?."""
-        return query if self.backend == POSTGRES else query.replace('%s', '?')
+    @staticmethod
+    def _translate(query):
+        """Queries are written with %s placeholders; sqlite3 expects ?."""
+        return query.replace('%s', '?')
 
     def execute(self, query, params=None):
         """
         Run a query.
 
-        On failure the transaction is rolled back before re-raising. Without
-        this a single bad query leaves a PostgreSQL connection in an aborted
-        state and every later query fails with "current transaction is
-        aborted", turning one error into a broken session.
+        On failure the transaction is rolled back before re-raising, so a
+        single bad query cannot leave the session in a broken state.
         """
         try:
             self.cursor.execute(self._translate(query), params or ())
@@ -185,9 +144,6 @@ class DBManager:
 
     def last_insert_id(self):
         """Primary key generated by the most recent INSERT."""
-        if self.backend == POSTGRES:
-            self.cursor.execute("SELECT lastval()")
-            return self.cursor.fetchone()[0]
         return self.cursor.lastrowid
 
     # ------------------------------------------------------------------
@@ -198,7 +154,7 @@ class DBManager:
         """Create tables, apply migrations and seed reference data."""
         try:
             for _, ddl in schema.TABLES:
-                self.cursor.execute(schema.render(ddl, self.backend))
+                self.cursor.execute(ddl)
 
             self._apply_migrations()
 
@@ -216,15 +172,8 @@ class DBManager:
 
     def _existing_columns(self, table):
         """Column names currently present on a table."""
-        if self.backend == POSTGRES:
-            self.cursor.execute(
-                "SELECT column_name FROM information_schema.columns WHERE table_name = %s",
-                (table,)
-            )
-        else:
-            self.cursor.execute(f"PRAGMA table_info({table})")
-            return {row[1] for row in self.cursor.fetchall()}
-        return {row[0] for row in self.cursor.fetchall()}
+        self.cursor.execute(f"PRAGMA table_info({table})")
+        return {row[1] for row in self.cursor.fetchall()}
 
     def _apply_migrations(self):
         """Add columns introduced after a database was first created."""
@@ -238,26 +187,22 @@ class DBManager:
         self.cursor.execute("SELECT COUNT(*) FROM payment_method")
         if self.cursor.fetchone()[0] == 0:
             self.cursor.executemany(
-                self._translate(
-                    "INSERT INTO payment_method (payment_name, method_type, description) "
-                    "VALUES (%s, %s, %s)"
-                ),
+                "INSERT INTO payment_method (payment_name, method_type, description) "
+                "VALUES (?, ?, ?)",
                 schema.PAYMENT_METHODS
             )
 
         self.cursor.execute("SELECT COUNT(*) FROM category")
         if self.cursor.fetchone()[0] == 0:
             self.cursor.executemany(
-                self._translate(
-                    "INSERT INTO category (category_name, description) VALUES (%s, %s)"
-                ),
+                "INSERT INTO category (category_name, description) VALUES (?, ?)",
                 schema.CATEGORIES
             )
 
     def _ensure_admin_account(self):
         """Create the default admin login on a fresh database."""
         self.cursor.execute(
-            self._translate("SELECT COUNT(*) FROM staff WHERE staff_id = %s"),
+            "SELECT COUNT(*) FROM staff WHERE staff_id = ?",
             (Settings.DEFAULT_ADMIN_USERNAME,)
         )
         if self.cursor.fetchone()[0]:
@@ -267,10 +212,8 @@ class DBManager:
             Settings.DEFAULT_ADMIN_PASSWORD.encode('utf-8'), bcrypt.gensalt()
         ).decode('utf-8')
         self.cursor.execute(
-            self._translate(
-                "INSERT INTO staff (staff_id, staff_psw, staff_name, staff_position, "
-                "staff_phone, staff_email) VALUES (%s, %s, %s, %s, %s, %s)"
-            ),
+            "INSERT INTO staff (staff_id, staff_psw, staff_name, staff_position, "
+            "staff_phone, staff_email) VALUES (?, ?, ?, ?, ?, ?)",
             (Settings.DEFAULT_ADMIN_USERNAME, hashed, Settings.DEFAULT_ADMIN_NAME,
              'admin', Settings.DEFAULT_ADMIN_PHONE, Settings.DEFAULT_ADMIN_EMAIL)
         )
