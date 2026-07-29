@@ -2,12 +2,14 @@
 Main application window - Dashboard and navigation hub
 """
 
-from PyQt6.QtWidgets import QLabel, QTableWidgetItem, QMessageBox
+from PyQt6.QtWidgets import QLabel, QTableWidgetItem
 from PyQt6.QtCore import QTimer, Qt
 from datetime import datetime
 
 from src.ui.base import BaseWindow
 from src.services import ReportService
+from src.utils.constants import EXPIRY_WARNING_DAYS, URGENT_EXPIRY_DAYS
+from src.utils.helpers import format_currency, format_date, format_time
 
 
 class MainWindow(BaseWindow):
@@ -89,23 +91,34 @@ class MainWindow(BaseWindow):
         user_id = self.context.staff_id or "Unknown"
         self.status_label.setText(f"User: {user_id} | {current_time}")
 
+    @staticmethod
+    def _fill_table(table, rows):
+        """Fill a table with pre-formatted strings, one tuple per row."""
+        table.setSortingEnabled(False)
+        table.setRowCount(len(rows))
+
+        for row_idx, values in enumerate(rows):
+            for col_idx, value in enumerate(values):
+                item = QTableWidgetItem(value)
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                table.setItem(row_idx, col_idx, item)
+
+        table.setSortingEnabled(True)
+
     def load_stock_overview(self):
         """Load stock overview table"""
         try:
-            sql = """
-                SELECT medicine_id, medicine_name, unit, stock_quantity, batch_number, sale_price
+            self.db.execute("""
+                SELECT medicine_id, medicine_name, unit, stock_quantity,
+                       batch_number, sale_price
                 FROM medicine
                 ORDER BY medicine_name
-            """
-            self.db.execute(sql)
-            results = self.db.fetchall()
-
-            self.stock_medicine.setRowCount(len(results))
-            for row, data in enumerate(results):
-                for col, value in enumerate(data):
-                    item = QTableWidgetItem(str(value or ''))
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                    self.stock_medicine.setItem(row, col, item)
+            """)
+            self._fill_table(self.stock_medicine, [
+                (str(mid), name or '', unit or '', str(qty if qty is not None else 0),
+                 batch or '', format_currency(price))
+                for mid, name, unit, qty, batch, price in self.db.fetchall()
+            ])
 
         except Exception as e:
             self.show_error(f"Error loading stock overview: {e}")
@@ -113,45 +126,48 @@ class MainWindow(BaseWindow):
     def load_outdate_warning(self):
         """Load expiring medicines warning table"""
         try:
-            sql = """
-                SELECT medicine_name, stock_quantity, unit, batch_number, expiration_date,
-                       (expiration_date::date - CURRENT_DATE) AS days_left
+            days_left = self.context.sql.days_until('expiration_date')
+            self.db.execute(f"""
+                SELECT medicine_id, medicine_name, stock_quantity, unit, batch_number,
+                       expiration_date, {days_left} AS days_left
                 FROM medicine
-                WHERE (expiration_date::date - CURRENT_DATE) <= 60
-                  AND (expiration_date::date - CURRENT_DATE) >= 0
+                WHERE expiration_date IS NOT NULL
+                  AND {days_left} BETWEEN 0 AND {EXPIRY_WARNING_DAYS}
                 ORDER BY expiration_date ASC
-            """
-            self.db.execute(sql)
-            results = self.db.fetchall()
-
-            self.outdate_medicine.setRowCount(len(results))
-            for row, data in enumerate(results):
-                for col, value in enumerate(data):
-                    item = QTableWidgetItem(str(value or ''))
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                    self.outdate_medicine.setItem(row, col, item)
+            """)
+            self._fill_table(self.outdate_medicine, [
+                (str(mid), name or '', str(qty if qty is not None else 0), unit or '',
+                 batch or '', format_date(expiry), str(days),
+                 self._expiry_status(days))
+                for mid, name, qty, unit, batch, expiry, days in self.db.fetchall()
+            ])
 
         except Exception as e:
             self.show_error(f"Error loading expiry warnings: {e}")
 
+    @staticmethod
+    def _expiry_status(days_left):
+        """Severity marker matching the legend shown under the table."""
+        if days_left is None:
+            return ''
+        return '!' if days_left <= URGENT_EXPIRY_DAYS else '⚠'
+
     def load_today_invoice(self):
         """Load today's invoices"""
         try:
-            sql = """
-                SELECT invoice_id, invoice_date, customer_id, total_amount, staff_id, payment_status
-                FROM invoice
-                WHERE DATE(invoice_date) = CURRENT_DATE
-                ORDER BY invoice_date DESC
-            """
-            self.db.execute(sql)
-            results = self.db.fetchall()
-
-            self.invoice_daily.setRowCount(len(results))
-            for row, data in enumerate(results):
-                for col, value in enumerate(data):
-                    item = QTableWidgetItem(str(value or ''))
-                    item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                    self.invoice_daily.setItem(row, col, item)
+            self.db.execute(f"""
+                SELECT i.invoice_id, i.invoice_date, c.customer_name,
+                       i.total_amount, i.staff_id, i.payment_status
+                FROM invoice i
+                LEFT JOIN customer c ON i.customer_id = c.customer_id
+                WHERE {self.context.sql.date_of('i.invoice_date')} = {self.context.sql.today}
+                ORDER BY i.invoice_date DESC
+            """)
+            self._fill_table(self.invoice_daily, [
+                (str(inv_id), format_time(dt), customer or 'Khách lẻ',
+                 format_currency(total), staff or '', status or '')
+                for inv_id, dt, customer, total, staff, status in self.db.fetchall()
+            ])
 
         except Exception as e:
             self.show_error(f"Error loading today's invoices: {e}")
@@ -225,15 +241,7 @@ class MainWindow(BaseWindow):
     def show_report_dialog(self):
         """Show report export dialog"""
         from src.ui.dialogs.report_dialog import ReportDialog
-        dialog = ReportDialog(self.context, self)
-
-        # Show quick menu for report type
-        from PyQt6.QtWidgets import QMenu
-        menu = QMenu(self)
-        menu.addAction("Stock Report", dialog.export_stock_report)
-        menu.addAction("Invoice Report (Today)", dialog.export_invoice_report)
-        menu.addAction("Expiry Warning", dialog.export_expiry_report)
-        menu.exec(self.export_report.mapToGlobal(self.export_report.rect().bottomLeft()))
+        ReportDialog(self.context, self).exec()
 
     def show_create_invoice(self):
         """Show create invoice dialog"""

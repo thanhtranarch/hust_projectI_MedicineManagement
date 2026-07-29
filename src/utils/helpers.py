@@ -3,8 +3,12 @@ Helper utility functions
 """
 
 import os
+import re
 import sys
+
 import darkdetect
+
+from .constants import DATE_FORMAT_DISPLAY, DATETIME_FORMAT_DISPLAY
 
 
 def resource_path(relative_path):
@@ -38,6 +42,37 @@ def get_theme():
     except Exception:
         # Default to light if detection fails
         return 'light'
+
+
+def format_date(value):
+    """
+    Render a date/datetime for display as dd/mm/yyyy.
+
+    Values already stored as strings are passed through unchanged.
+    """
+    if value is None:
+        return ""
+    if hasattr(value, 'strftime'):
+        return value.strftime(DATE_FORMAT_DISPLAY)
+    return str(value)
+
+
+def format_datetime(value):
+    """Render a datetime for display as dd/mm/yyyy HH:MM:SS."""
+    if value is None:
+        return ""
+    if hasattr(value, 'strftime'):
+        return value.strftime(DATETIME_FORMAT_DISPLAY)
+    return str(value)
+
+
+def format_time(value):
+    """Render just the clock time of a datetime, as HH:MM."""
+    if value is None:
+        return ""
+    if hasattr(value, 'strftime'):
+        return value.strftime("%H:%M")
+    return str(value)
 
 
 def format_currency(amount):
@@ -91,7 +126,6 @@ def validate_email(email):
     if not email:
         return False
 
-    import re
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
     return re.match(pattern, email) is not None
 

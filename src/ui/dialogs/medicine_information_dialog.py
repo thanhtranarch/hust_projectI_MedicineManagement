@@ -2,7 +2,7 @@
 Medicine information dialog with view/edit capability
 """
 
-from PyQt6.QtWidgets import QPushButton, QDialogButtonBox
+from PyQt6.QtWidgets import QDialogButtonBox
 from PyQt6.QtCore import pyqtSignal
 
 from src.ui.base import BaseDialog

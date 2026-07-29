@@ -4,13 +4,14 @@
 
 ![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
 ![PyQt6](https://img.shields.io/badge/PyQt6-6.4.0+-green.svg)
-![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-orange.svg)
+![SQLite](https://img.shields.io/badge/SQLite-built--in-003B57.svg)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-orange.svg)
+![Tests](https://img.shields.io/badge/Tests-167%20passing-brightgreen.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-![Status](https://img.shields.io/badge/Status-Active-success.svg)
 
-**Ứng dụng desktop quản lý nhà thuốc hiện đại với kiến trúc Clean Architecture**
+**Ứng dụng desktop quản lý nhà thuốc: quản lý thuốc, kiểm soát tồn kho, bán hàng và báo cáo doanh thu**
 
-[Tính năng](#tính-năng-chính) • [Cài đặt](#cài-đặt) • [Sử dụng](#sử-dụng) • [Kiến trúc](#kiến-trúc-hệ-thống) • [Đóng góp](#đóng-góp)
+[Bắt đầu nhanh](#bắt-đầu-nhanh) • [Tính năng](#tính-năng) • [Cài đặt](#cài-đặt) • [Kiến trúc](#kiến-trúc-hệ-thống) • [Kiểm thử](#kiểm-thử)
 
 </div>
 
@@ -19,138 +20,137 @@
 ## Mục lục
 
 - [Giới thiệu](#giới-thiệu)
-- [Tính năng chính](#tính-năng-chính)
+- [Bắt đầu nhanh](#bắt-đầu-nhanh)
+- [Tính năng](#tính-năng)
 - [Công nghệ sử dụng](#công-nghệ-sử-dụng)
-- [Kiến trúc hệ thống](#kiến-trúc-hệ-thống)
 - [Cài đặt](#cài-đặt)
+  - [Chế độ SQLite (mặc định)](#chế-độ-sqlite-mặc-định)
+  - [Chế độ PostgreSQL / Supabase](#chế-độ-postgresql--supabase)
 - [Sử dụng](#sử-dụng)
+- [Dữ liệu mẫu](#dữ-liệu-mẫu)
+- [Kiến trúc hệ thống](#kiến-trúc-hệ-thống)
 - [Cấu trúc thư mục](#cấu-trúc-thư-mục)
 - [Cơ sở dữ liệu](#cơ-sở-dữ-liệu)
+- [Báo cáo](#báo-cáo)
+- [Kiểm thử](#kiểm-thử)
 - [Đóng gói ứng dụng](#đóng-gói-ứng-dụng)
+- [Xử lý sự cố](#xử-lý-sự-cố)
 - [Roadmap](#roadmap)
 - [Đóng góp](#đóng-góp)
+- [License](#license)
 - [Tác giả](#tác-giả)
 
 ---
 
 ## Giới thiệu
 
-**MediManager** là ứng dụng desktop quản lý nhà thuốc toàn diện, được phát triển với **Python** và **PyQt6**, kết nối với **Supabase PostgreSQL Cloud**. Dự án được xây dựng theo kiến trúc **Clean Architecture**, đảm bảo tính bảo trì, mở rộng và kiểm thử cao.
+**MediManager** là ứng dụng desktop quản lý nhà thuốc được phát triển bằng **Python** và **PyQt6**,
+sử dụng **cơ sở dữ liệu quan hệ** để quản lý thông tin thuốc, kiểm soát tồn kho,
+hỗ trợ bán hàng và xuất báo cáo doanh thu.
+
+Hệ thống giúp nhà thuốc theo dõi số lượng thuốc, hạn sử dụng, lịch sử bán hàng và doanh thu,
+đồng thời hỗ trợ các thao tác tìm kiếm thuốc, nhập - xuất kho, quản lý thông tin khách hàng
+và nhà cung cấp.
 
 ### Thông tin dự án
-- **Môn học**: PROJECT I
-- **Trường**: Đại học Bách khoa Hà Nội
-- **Phiên bản**: 2.0.0
-- **Trạng thái**: Đang phát triển tích cực
+
+| | |
+|---|---|
+| **Môn học** | PROJECT I |
+| **Trường** | Đại học Bách khoa Hà Nội |
+| **Phiên bản** | 2.0.0 |
+| **Kiến trúc** | Clean Architecture (phân tách UI / Service / Core) |
+| **Cơ sở dữ liệu** | SQLite (mặc định) hoặc PostgreSQL / Supabase |
 
 ---
 
-## Tính năng chính
+## Bắt đầu nhanh
+
+Chạy được ngay với 3 lệnh, **không cần cấu hình gì thêm**:
+
+```bash
+pip install -r requirements.txt
+python seed_demo_data.py      # tùy chọn: nạp dữ liệu mẫu để xem thử
+python run.py
+```
+
+Đăng nhập bằng `admin` / `admin`.
+
+Mặc định ứng dụng dùng SQLite, tự tạo file `data/medimanager.db` và toàn bộ bảng
+ở lần chạy đầu tiên. Muốn dùng PostgreSQL/Supabase thì xem
+[phần cấu hình bên dưới](#chế-độ-postgresql--supabase).
+
+---
+
+## Tính năng
 
 ### Quản lý người dùng
-- Đăng nhập / Đăng ký tài khoản
-- Phân quyền 3 cấp: **Admin**, **Manager**, **Staff**
-- Quản lý thông tin nhân viên
-- Theo dõi lịch sử hoạt động người dùng
+- Đăng nhập / đăng ký tài khoản nhân viên
+- Mật khẩu được mã hóa bằng **bcrypt**; tài khoản cũ lưu mật khẩu dạng thô sẽ được
+  tự động nâng cấp sang bcrypt ở lần đăng nhập kế tiếp
+- Phân quyền 3 cấp: **admin**, **manager**, **staff**
+- Nhật ký hoạt động (activity log) ghi lại thao tác của từng nhân viên
 
 ### Quản lý thuốc
 - Thêm, sửa, xóa thông tin thuốc
-- Tìm kiếm và lọc thuốc theo danh mục
-- Quản lý chi tiết thuốc (thành phần, công dụng, liều lượng)
-- Theo dõi ngày sản xuất và hạn sử dụng
+- Tìm kiếm thuốc theo tên ngay trên bảng danh sách
+- Phân loại theo danh mục (thuốc giảm đau, kháng sinh, vitamin, dụng cụ y tế...)
+- Theo dõi hoạt chất, thương hiệu, đơn vị tính, số lô, giá nhập và giá bán
 
 ### Quản lý tồn kho
 - Theo dõi số lượng tồn kho theo thời gian thực
-- Cảnh báo thuốc sắp hết hạn
-- Cảnh báo thuốc tồn kho thấp
-- Quản lý giao dịch nhập/xuất kho
-- Lịch sử biến động tồn kho
+- **Phiếu nhập kho** gồm phần đầu (nhà cung cấp, nhân viên, hình thức thanh toán)
+  và các dòng chi tiết từng loại thuốc
+- Nhập kho tự động cộng tồn và cập nhật giá; bán hàng tự động trừ tồn
+- **Cảnh báo hạn sử dụng** trên màn hình chính, phân mức:
+  - `!` còn ≤ 30 ngày
+  - `⚠` còn ≤ 60 ngày
 
 ### Quản lý nhà cung cấp & khách hàng
-- Quản lý thông tin nhà cung cấp
-- Quản lý thông tin khách hàng
-- Theo dõi lịch sử giao dịch
+- Quản lý thông tin nhà cung cấp và điều khoản thanh toán
+- Quản lý khách hàng, tra cứu nhanh theo số điện thoại
+- Tự động tạo khách hàng mới ngay trong lúc lập hóa đơn
 
-### Quản lý hóa đơn
-- Tạo hóa đơn bán hàng
-- Quản lý chi tiết hóa đơn
-- Theo dõi doanh thu theo ngày
-- Tìm kiếm và xem lại hóa đơn cũ
+### Bán hàng & hóa đơn
+- Lập hóa đơn bán hàng với nhiều mặt hàng
+- Chỉ cho phép bán thuốc còn tồn kho, kiểm tra số lượng trước khi thêm vào giỏ
+- Hóa đơn, chi tiết hóa đơn và việc trừ tồn kho nằm trong **cùng một giao dịch**
+- Xem lại hóa đơn cũ kèm chi tiết từng dòng
 
-### Báo cáo & Thống kê
-- Báo cáo tồn kho
-- Báo cáo doanh thu
-- Báo cáo thuốc sắp hết hạn
-- Xuất báo cáo PDF
-- Nhật ký hoạt động hệ thống
+### Báo cáo & thống kê
+- Báo cáo **tồn kho** (kèm tổng giá trị tồn)
+- Báo cáo **doanh thu** theo khoảng thời gian, kèm doanh thu theo ngày và thuốc bán chạy
+- Báo cáo **hóa đơn** theo ngày
+- Báo cáo **thuốc sắp hết hạn** với ngưỡng cảnh báo tùy chỉnh
+- Toàn bộ báo cáo xuất ra **PDF tiếng Việt có dấu**
 
 ---
 
 ## Công nghệ sử dụng
 
-### Backend & Database
-| Công nghệ | Mô tả | Phiên bản |
-|-----------|-------|-----------|
-| ![Python](https://img.shields.io/badge/-Python-3776AB?style=flat&logo=python&logoColor=white) | Ngôn ngữ lập trình chính | 3.8+ |
-| ![PostgreSQL](https://img.shields.io/badge/-PostgreSQL-336791?style=flat&logo=postgresql&logoColor=white) | Cơ sở dữ liệu quan hệ | 14+ |
-| ![Supabase](https://img.shields.io/badge/-Supabase-3ECF8E?style=flat&logo=supabase&logoColor=white) | PostgreSQL Cloud Platform | 2.0+ |
-| **psycopg2** | PostgreSQL adapter cho Python | 2.9.9+ |
+### Ứng dụng
+| Công nghệ | Vai trò | Phiên bản |
+|-----------|---------|-----------|
+| **Python** | Ngôn ngữ lập trình chính | 3.8+ |
+| **PyQt6** | Framework giao diện người dùng | 6.4.0+ |
+| **Qt Designer** | Thiết kế giao diện dạng `.ui` | — |
 | **bcrypt** | Mã hóa mật khẩu | 4.0.1+ |
+| **reportlab** | Sinh báo cáo PDF | 4.0.0+ |
+| **darkdetect** | Nhận diện theme sáng/tối của hệ thống | 0.8.0+ |
+| **python-dotenv** | Đọc cấu hình từ file `.env` | 1.0.0+ |
 
-### Frontend & UI
-| Công nghệ | Mô tả | Phiên bản |
-|-----------|-------|-----------|
-| ![PyQt6](https://img.shields.io/badge/-PyQt6-41CD52?style=flat&logo=qt&logoColor=white) | Framework giao diện người dùng | 6.4.0+ |
-| **darkdetect** | Tự động phát hiện theme hệ thống | 0.8.0+ |
+### Cơ sở dữ liệu
+| Công nghệ | Vai trò |
+|-----------|---------|
+| **SQLite** | Backend mặc định, có sẵn trong Python, không cần cài đặt |
+| **PostgreSQL / Supabase** | Backend cho môi trường nhiều máy trạm |
+| **psycopg2-binary** | Driver PostgreSQL (chỉ cần khi dùng PostgreSQL) |
 
-### Utilities
-| Công nghệ | Mô tả |
-|-----------|-------|
-| **python-dotenv** | Quản lý biến môi trường |
-| **Qt Designer** | Thiết kế giao diện .ui |
-
----
-
-## Kiến trúc hệ thống
-
-MediManager được xây dựng theo **Clean Architecture** với các lớp phân tách rõ ràng:
-
-```
-┌─────────────────────────────────────────┐
-│      Presentation Layer (UI)            │
-│   ┌─────────────┬─────────────┐        │
-│   │   Windows   │   Dialogs   │        │
-│   └─────────────┴─────────────┘        │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│      Application Layer (Services)       │
-│   ┌───────────────────────────────┐    │
-│   │  Business Logic & Services    │    │
-│   └───────────────────────────────┘    │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│        Core Layer (Domain)              │
-│   ┌─────────────┬─────────────┐        │
-│   │  DBManager  │ AppContext  │        │
-│   └─────────────┴─────────────┘        │
-└──────────────┬──────────────────────────┘
-               │
-┌──────────────▼──────────────────────────┐
-│       Infrastructure Layer              │
-│      (Supabase PostgreSQL Cloud)        │
-└─────────────────────────────────────────┘
-```
-
-### Lợi ích của Clean Architecture:
-- **Tách biệt trách nhiệm**: Mỗi layer có trách nhiệm riêng biệt
-- **Dễ bảo trì**: Thay đổi một layer không ảnh hưởng layer khác
-- **Dễ kiểm thử**: Có thể test từng layer độc lập
-- **Mở rộng**: Dễ dàng thêm tính năng mới
-- **Tái sử dụng**: Code có thể tái sử dụng ở nhiều nơi
-
-**Chi tiết kiến trúc**: Xem [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+### Kiểm thử
+| Công nghệ | Vai trò |
+|-----------|---------|
+| **pytest** | Bộ khung kiểm thử |
+| **Qt offscreen** | Chạy kiểm thử giao diện không cần màn hình |
 
 ---
 
@@ -159,384 +159,513 @@ MediManager được xây dựng theo **Clean Architecture** với các lớp ph
 ### Yêu cầu hệ thống
 - **Python**: 3.8 trở lên
 - **Hệ điều hành**: Windows 10+, macOS 10.14+, Ubuntu 20.04+
-- **RAM**: Tối thiểu 2GB
+- **RAM**: tối thiểu 2GB
 - **Dung lượng**: ~200MB
 
-### Bước 1: Clone repository
+### Bước 1: Tải mã nguồn
 
 ```bash
 git clone https://github.com/thanhtranarch/hust_projectI_MedicineManagement.git
 cd hust_projectI_MedicineManagement
 ```
 
-### Bước 2: Cài đặt dependencies
+### Bước 2: Cài đặt thư viện
 
-#### Cách 1: Sử dụng requirements.txt (Khuyến nghị)
 ```bash
 pip install -r requirements.txt
 ```
 
-#### Cách 2: Cài đặt thủ công
-```bash
-pip install PyQt6>=6.4.0 psycopg2-binary>=2.9.9 bcrypt>=4.0.1 \
-            darkdetect>=0.8.0 python-dotenv>=1.0.0 supabase>=2.0.0
+> Trên Linux, PyQt6 cần thêm một vài thư viện hệ thống:
+> ```bash
+> sudo apt install libegl1 libgl1 libxkbcommon-x11-0 libdbus-1-3 libfontconfig1
+> ```
+
+### Bước 3: Chọn cơ sở dữ liệu
+
+Ứng dụng **tự động chọn backend**:
+
+| Điều kiện | Backend được dùng |
+|-----------|-------------------|
+| Không có `.env`, hoặc thiếu `DB_HOST` / `DB_PASSWORD` | **SQLite** |
+| Có đủ `DB_HOST` và `DB_PASSWORD` | **PostgreSQL** |
+| Đặt `DB_BACKEND=sqlite` hoặc `DB_BACKEND=postgres` | Theo giá trị chỉ định |
+
+#### Chế độ SQLite (mặc định)
+
+Không cần làm gì cả. Chạy `python run.py` là xong — ứng dụng tự tạo
+`data/medimanager.db` cùng toàn bộ bảng và tài khoản `admin`.
+
+Muốn đổi vị trí file database:
+
+```env
+SQLITE_PATH=duong/dan/toi/medimanager.db
 ```
 
-### Bước 3: Thiết lập Supabase Database
+#### Chế độ PostgreSQL / Supabase
 
-#### 3.1. Tạo Supabase Project
+**1. Tạo project Supabase**
 
-1. Truy cập [https://supabase.com](https://supabase.com)
-2. Đăng ký/đăng nhập tài khoản
-3. Click **"New Project"**
-4. Điền thông tin:
-   - **Project Name**: `medimanager`
-   - **Database Password**: Tạo password mạnh (lưu lại để dùng sau)
-   - **Region**: Chọn gần nhất (ví dụ: Singapore)
-5. Click **"Create new project"** và chờ ~2 phút
+1. Truy cập [supabase.com](https://supabase.com) và đăng nhập
+2. Chọn **New Project**, đặt tên `medimanager`, tạo **Database Password** và chọn
+   region gần nhất (ví dụ Singapore)
+3. Chờ khoảng 2 phút để project khởi tạo
 
-#### 3.2. Lấy Database Credentials
+**2. Lấy thông tin kết nối**
 
-**Lấy Database Connection String:**
-1. Vào **Settings** → **Database**
-2. Cuộn xuống **Connection Info**
-3. Copy các thông tin sau:
-   - **Host**: `db.xxxxxxxxxxxxx.supabase.co`
-   - **Database name**: `postgres`
-   - **Port**: `5432`
-   - **User**: `postgres`
-   - **Password**: Password bạn đã tạo ở bước 3.1
+Vào **Settings → Database → Connection Info** và ghi lại `Host`, `Port`,
+`Database name`, `User`. Mật khẩu là mật khẩu bạn tạo ở bước 1.
 
-**Lấy API Keys:**
-1. Vào **Settings** → **API**
-2. Copy:
-   - **Project URL**: `https://xxxxxxxxxxxxx.supabase.co`
-   - **anon/public key**: `eyJhbGc...`
+**3. Tạo file `.env`**
 
-#### 3.3. Cấu hình Environment Variables
-
-1. Copy file template:
 ```bash
 cp .env.example .env
 ```
 
-2. Mở file `.env` và điền thông tin:
-```env
-# Supabase API Configuration
-SUPABASE_URL=https://xxxxxxxxxxxxx.supabase.co
-SUPABASE_KEY=eyJhbGc...your-anon-key...
+Điền vào `.env`:
 
-# Database Configuration
+```env
+DB_BACKEND=postgres
 DB_HOST=db.xxxxxxxxxxxxx.supabase.co
 DB_PORT=5432
 DB_NAME=postgres
 DB_USER=postgres
-DB_PASSWORD=your-database-password
+DB_PASSWORD=mat-khau-cua-ban
 ```
 
-#### 3.4. Khởi tạo Database Schema
+**4. Tạo bảng**
 
-**Tự động** (Khuyến nghị):
-- Ứng dụng sẽ tự động tạo bảng khi chạy lần đầu
+- **Tự động** (khuyến nghị): ứng dụng tự tạo toàn bộ bảng ở lần chạy đầu tiên.
+- **Thủ công**: mở **SQL Editor** trên Supabase, dán nội dung `supabase_schema.sql` rồi **Run**.
 
-**Thủ công**:
-1. Vào **SQL Editor** trong Supabase Dashboard
-2. Copy nội dung file `supabase_schema.sql`
-3. Paste vào SQL Editor và click **"Run"**
+> Nếu bạn đã có database tạo từ phiên bản cũ, ứng dụng sẽ **tự động bổ sung** các
+> cột mới (`stock.staff_id`, `stock.payment_method_id`, `invoice.payment_method_id`,
+> `payment_method.method_type`, `medicine.unit`) mà không làm mất dữ liệu hiện có.
 
 ---
 
 ## Sử dụng
 
-### Khởi chạy ứng dụng
+### Khởi chạy
 
-#### Cách 1: Sử dụng entry point mới (Khuyến nghị)
 ```bash
 python run.py
 ```
 
-#### Cách 2: Sử dụng file legacy
-```bash
-python MediManager.py
+Khi khởi động, ứng dụng in ra backend đang dùng:
+
+```
+============================================================
+  MediManager v2.0.0
+  Trần Tiến Thạnh
+============================================================
+Database: SQLite /home/user/hust_projectI_MedicineManagement/data/medimanager.db
+Connected to database.
 ```
 
 ### Đăng nhập lần đầu
-
-Hệ thống tự động tạo tài khoản admin nếu chưa có:
 
 ```
 Username: admin
 Password: admin
 ```
 
-> **Lưu ý bảo mật**: Đổi mật khẩu admin ngay sau lần đăng nhập đầu tiên!
+> **Lưu ý bảo mật**: đổi mật khẩu admin ngay sau lần đăng nhập đầu tiên.
 
-### Giao diện chính
-
-Sau khi đăng nhập, bạn sẽ thấy Dashboard với các module:
+### Luồng nghiệp vụ chính
 
 ```
-┌─────────────────────────────────────────┐
-│          MediManager Dashboard           │
-├─────────────────────────────────────────┤
-│  Dashboard  │  Thuốc      │  Kho        │
-│  Khách hàng │  Hóa đơn    │  Nhân viên  │
-│  Báo cáo    │  Nhật ký    │  Cài đặt   │
-└─────────────────────────────────────────┘
+Nhà cung cấp  ──►  Nhập kho  ──►  Tồn kho  ──►  Bán hàng  ──►  Hóa đơn
+                  (stock +          (medicine.      (trừ tồn)      │
+                   stock_detail)   stock_quantity)                 ▼
+                                          │                    Báo cáo
+                                          ▼                   doanh thu
+                                  Cảnh báo hạn dùng
 ```
+
+1. **Nhà cung cấp** — thêm nhà cung cấp trước khi nhập hàng
+2. **Nhập kho** — tạo phiếu nhập, chọn nhà cung cấp và thêm từng dòng thuốc.
+   Thuốc chưa có trong hệ thống sẽ được tạo mới; thuốc đã có (trùng tên và số lô)
+   sẽ được cộng dồn tồn kho và cập nhật giá
+3. **Bán hàng** — từ màn hình chính chọn **Tạo hóa đơn**, nhập số điện thoại
+   khách hàng, thêm thuốc và lưu. Tồn kho tự động giảm
+4. **Báo cáo** — nhấn **In báo cáo ngày** để chọn loại báo cáo và xuất PDF
+
+---
+
+## Dữ liệu mẫu
+
+Để xem thử ứng dụng với dữ liệu thật, dùng script nạp dữ liệu mẫu:
+
+```bash
+python seed_demo_data.py                # nạp dữ liệu mẫu
+python seed_demo_data.py --reset        # xóa dữ liệu cũ rồi nạp lại
+python seed_demo_data.py --days 90      # sinh 90 ngày lịch sử bán hàng
+```
+
+Script tạo ra:
+
+- 3 tài khoản nhân viên (mật khẩu `matkhau123`)
+- 4 nhà cung cấp, 5 khách hàng
+- 14 loại thuốc thuộc nhiều danh mục, trong đó có vài loại sắp hết hạn
+  để thấy được cảnh báo
+- Các phiếu nhập kho và khoảng 30 ngày lịch sử bán hàng
+
+Dữ liệu tham chiếu (danh mục, hình thức thanh toán) và tài khoản `admin`
+luôn được giữ nguyên.
+
+---
+
+## Kiến trúc hệ thống
+
+Dự án tổ chức theo **Clean Architecture**, tách bạch giao diện, nghiệp vụ và truy cập dữ liệu:
+
+```
+┌──────────────────────────────────────────────────────┐
+│  Presentation Layer — src/ui/                        │
+│  windows/ · dialogs/ · forms/ (.ui) · base/          │
+└───────────────────────┬──────────────────────────────┘
+                        │
+┌───────────────────────▼──────────────────────────────┐
+│  Service Layer — src/services/                       │
+│  AuthService · ReportService                         │
+└───────────────────────┬──────────────────────────────┘
+                        │
+┌───────────────────────▼──────────────────────────────┐
+│  Core Layer — src/core/                              │
+│  AppContext · DBManager · SqlDialect · schema        │
+└───────────────────────┬──────────────────────────────┘
+                        │
+┌───────────────────────▼──────────────────────────────┐
+│  Infrastructure                                      │
+│  SQLite  ·  PostgreSQL / Supabase                    │
+└──────────────────────────────────────────────────────┘
+```
+
+### Các thành phần chính
+
+| Thành phần | Trách nhiệm |
+|------------|-------------|
+| `AppContext` | Giữ kết nối database và phiên đăng nhập, truyền xuống mọi màn hình |
+| `DBManager` | Mở kết nối, thực thi truy vấn, quản lý giao dịch, tạo bảng và migration |
+| `SqlDialect` | Che giấu khác biệt SQL giữa SQLite và PostgreSQL |
+| `schema.py` | **Nguồn định nghĩa duy nhất** của lược đồ dữ liệu |
+| `AuthService` | Xác thực, băm mật khẩu, đăng ký tài khoản |
+| `ReportService` | Sinh báo cáo PDF |
+| `BaseWindow` / `BaseDialog` | Nạp file `.ui`, đặt icon, hộp thoại thông báo dùng chung |
+
+### Hỗ trợ hai backend
+
+Mã nghiệp vụ chỉ viết SQL một lần. `DBManager` xử lý phần khác biệt:
+
+| Khác biệt | PostgreSQL | SQLite |
+|-----------|-----------|--------|
+| Tham số truy vấn | `%s` | `?` (tự động chuyển đổi) |
+| Khóa chính tự tăng | `SERIAL PRIMARY KEY` | `INTEGER PRIMARY KEY AUTOINCREMENT` |
+| ID vừa thêm | `SELECT lastval()` | `cursor.lastrowid` |
+| Ngày hôm nay | `CURRENT_DATE` | `date('now','localtime')` |
+| Số ngày còn lại | `col::date - CURRENT_DATE` | `julianday(...) - julianday(...)` |
+
+Nhờ đó việc chuyển giữa máy cá nhân (SQLite) và môi trường nhiều máy trạm
+(PostgreSQL) không cần sửa một dòng mã nghiệp vụ nào.
+
+Chi tiết đầy đủ: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ---
 
 ## Cấu trúc thư mục
 
 ```
-MediManager/
+hust_projectI_MedicineManagement/
 │
-├── run.py                       # Entry point chính
-├── requirements.txt             # Python dependencies
-├── .env.example                 # Template cấu hình
-├── .gitignore                   # Git ignore rules
-├── supabase_schema.sql          # Database schema
+├── run.py                        # Entry point của ứng dụng
+├── seed_demo_data.py             # Script nạp dữ liệu mẫu
+├── supabase_schema.sql           # Lược đồ PostgreSQL (sinh từ src/core/schema.py)
+├── requirements.txt              # Thư viện cho ứng dụng
+├── requirements-dev.txt          # Thư viện cho phát triển & kiểm thử
+├── pytest.ini                    # Cấu hình pytest
+├── .env.example                  # Mẫu cấu hình
 │
-├── src/                         # Source code
-│   ├── config/                  # Quản lý cấu hình
-│   │   ├── settings.py          # Cài đặt ứng dụng
-│   │   └── database.py          # Cấu hình database
+├── src/
+│   ├── config/
+│   │   ├── database.py           # Chọn backend, tham số kết nối
+│   │   └── settings.py           # Đường dẫn, hằng số ứng dụng
 │   │
-│   ├── core/                    # Core business logic
-│   │   ├── db_manager.py        # Database manager (DAO)
-│   │   └── app_context.py       # Application context
+│   ├── core/
+│   │   ├── app_context.py        # Kết nối database + phiên đăng nhập
+│   │   ├── db_manager.py         # Thực thi truy vấn, giao dịch, migration
+│   │   └── schema.py             # Định nghĩa lược đồ (nguồn duy nhất)
 │   │
-│   ├── services/                # Business services
-│   │   └── report_service.py    # Tạo báo cáo PDF
+│   ├── services/
+│   │   ├── auth_service.py       # Đăng nhập, đăng ký, mã hóa mật khẩu
+│   │   └── report_service.py     # Sinh báo cáo PDF
 │   │
-│   ├── ui/                      # Giao diện người dùng
-│   │   ├── windows/             # Main windows
-│   │   │   ├── main_window.py
-│   │   │   ├── medicine_window.py
-│   │   │   ├── invoice_window.py
-│   │   │   ├── stock_window.py
-│   │   │   ├── customer_window.py
-│   │   │   ├── supplier_window.py
-│   │   │   ├── staff_window.py
-│   │   │   └── logs_window.py
-│   │   │
-│   │   ├── dialogs/             # Dialog windows
-│   │   │   ├── login_dialog.py
-│   │   │   ├── register_dialog.py
-│   │   │   ├── medicine_information_dialog.py
-│   │   │   ├── medicine_add_dialog.py
-│   │   │   ├── create_invoice_dialog.py
-│   │   │   ├── create_stock_dialog.py
-│   │   │   ├── customer_information_dialog.py
-│   │   │   ├── supplier_information_dialog.py
-│   │   │   ├── staff_information_dialog.py
-│   │   │   └── report_dialog.py
-│   │   │
-│   │   ├── forms/               # Qt Designer .ui files
-│   │   └── base/                # Base classes
-│   │       ├── base_window.py
-│   │       └── base_dialog.py
+│   ├── ui/
+│   │   ├── base/                 # BaseWindow, BaseDialog
+│   │   ├── windows/              # 8 màn hình chính
+│   │   ├── dialogs/              # 12 hộp thoại
+│   │   └── forms/                # File giao diện .ui của Qt Designer
 │   │
-│   └── utils/                   # Utilities
-│       ├── helpers.py           # Helper functions
-│       └── constants.py         # Application constants
+│   └── utils/
+│       ├── constants.py          # Hằng số dùng chung, thông báo
+│       └── helpers.py            # Định dạng tiền tệ, ngày tháng, kiểm tra dữ liệu
 │
-├── assets/                      # Static resources
-│   ├── icons/                   # Application icons
-│   └── fonts/                   # Fonts for PDF
+├── tests/                        # Bộ kiểm thử (167 test case)
+│   ├── conftest.py               # Fixture dùng chung
+│   ├── factories.py              # Hàm tạo dữ liệu kiểm thử
+│   ├── test_database.py          # Lược đồ, migration, giao dịch
+│   ├── test_auth.py              # Đăng nhập, đăng ký, nâng cấp mật khẩu
+│   ├── test_workflows.py         # Nhập kho, bán hàng, cảnh báo hạn, doanh thu
+│   ├── test_reports.py           # Sinh báo cáo PDF
+│   ├── test_ui.py                # Kiểm thử giao diện headless
+│   ├── test_postgres.py          # Kiểm thử riêng cho PostgreSQL
+│   └── test_helpers.py           # Hàm tiện ích và cấu hình
 │
-├── exports/                     # Generated reports
-├── docs/                        # Documentation
-│   └── ARCHITECTURE.md
+├── assets/
+│   ├── fonts/arial.ttf           # Font Unicode cho báo cáo tiếng Việt
+│   └── icons/                    # Icon ứng dụng
 │
-└── Legacy files/                # (Đang refactor)
-    ├── MediManager.py          # Main UI cũ
-    ├── DBManager.py            # Database code cũ
-    └── export_reports.py       # Report code cũ
+├── docs/ARCHITECTURE.md          # Tài liệu kiến trúc chi tiết
+│
+├── data/                         # Database SQLite (tự tạo, không commit)
+└── exports/                      # Báo cáo PDF xuất ra (tự tạo, không commit)
 ```
 
 ---
 
 ## Cơ sở dữ liệu
 
-### Database: Supabase PostgreSQL Cloud
+### Sơ đồ quan hệ
 
-**Sơ đồ quan hệ**: [Xem trên dbdiagram.io](https://dbdiagram.io/d/PROJECT-I-MEDICINE-MANAGEMENT-67ef9cc94f7afba184576060)
+```
+   supplier ──┬──────────────► medicine ◄────────── category
+              │                 │    ▲
+              │                 │    │
+              ▼                 │    │
+   staff ──► stock ──► stock_detail  │
+     │         ▲                     │
+     │         │                     │
+     │    payment_method             │
+     │         │                     │
+     ▼         ▼                     │
+   invoice ────┴──► invoice_detail ──┘
+     ▲
+     │
+  customer
 
-### Bảng chính
-
-| Bảng | Mô tả | Số cột |
-|------|-------|--------|
-| `staff` | Thông tin nhân viên & tài khoản | 8 |
-| `medicine` | Thông tin thuốc | 12 |
-| `category` | Danh mục thuốc | 3 |
-| `supplier` | Nhà cung cấp | 6 |
-| `customer` | Khách hàng | 6 |
-| `invoice` | Hóa đơn | 7 |
-| `invoice_detail` | Chi tiết hóa đơn | 6 |
-| `stock` | Tồn kho | 7 |
-| `stock_transaction` | Biến động kho | 6 |
-| `activity_log` | Nhật ký hoạt động | 6 |
-
-### Mối quan hệ chính
-
-```sql
-staff (1) ──< (N) invoice
-customer (1) ──< (N) invoice
-invoice (1) ──< (N) invoice_detail
-medicine (1) ──< (N) invoice_detail
-medicine (1) ──< (N) stock
-supplier (1) ──< (N) stock
-medicine (1) ──< (N) stock_transaction
-staff (1) ──< (N) activity_log
+   staff ──► activity_log
 ```
 
-### Lợi ích Supabase
+### Danh sách bảng
 
-| Tính năng | Mô tả |
-|-----------|-------|
-| **Cloud-based** | Không cần cài MySQL/PostgreSQL local |
-| **Free tier** | 500MB database, 2GB bandwidth/tháng |
-| **Auto backup** | Tự động backup dữ liệu định kỳ |
-| **Bảo mật cao** | SSL/TLS encryption, Row Level Security |
-| **Scalable** | Dễ dàng nâng cấp khi cần |
-| **Dashboard** | Quản lý database qua web interface |
-| **Realtime** | Hỗ trợ realtime subscriptions |
+| Bảng | Mô tả |
+|------|-------|
+| `staff` | Tài khoản nhân viên, chức vụ, lương, mật khẩu đã băm |
+| `category` | Danh mục thuốc *(có sẵn 9 danh mục)* |
+| `payment_method` | Hình thức thanh toán, phân loại `purchase` / `sale` |
+| `supplier` | Nhà cung cấp và điều khoản thanh toán |
+| `customer` | Khách hàng |
+| `medicine` | Thông tin thuốc, giá, tồn kho, hạn dùng, số lô |
+| `stock` | Phần đầu phiếu nhập kho (nhà cung cấp, nhân viên, thanh toán) |
+| `stock_detail` | Chi tiết từng dòng thuốc trong phiếu nhập |
+| `invoice` | Hóa đơn bán hàng |
+| `invoice_detail` | Chi tiết từng dòng thuốc trong hóa đơn |
+| `activity_log` | Nhật ký thao tác của nhân viên |
+
+### Dữ liệu tham chiếu có sẵn
+
+**Hình thức thanh toán** — cột `method_type` phân biệt rõ hai nghiệp vụ:
+
+| Tên | Loại | Dùng khi |
+|-----|------|----------|
+| COD | `purchase` | Nhập kho |
+| prepayment | `purchase` | Nhập kho |
+| Tiền mặt | `sale` | Bán hàng |
+| Chuyển khoản | `sale` | Bán hàng |
+
+**Danh mục thuốc**: Thuốc giảm đau · Thuốc kháng sinh · Thuốc kháng viêm ·
+Vitamin & Khoáng chất · Thuốc tiêu hóa · Thuốc hô hấp · Thuốc tim mạch ·
+Dụng cụ y tế · Khác
+
+### Thay đổi lược đồ
+
+`src/core/schema.py` là **nguồn định nghĩa duy nhất**. Khi cần thêm bảng hoặc cột:
+
+1. Sửa `TABLES` (bảng mới) hoặc thêm mục vào `MIGRATIONS` (cột mới trên bảng cũ)
+2. Cập nhật `supabase_schema.sql` cho khớp
+3. Chạy `pytest tests/test_database.py` để kiểm tra
+
+Cách làm này giữ cho SQLite và PostgreSQL luôn đồng bộ, và các database đã triển khai
+trước đó vẫn được cập nhật cột mới mà không mất dữ liệu.
+
+---
+
+## Báo cáo
+
+Từ màn hình chính, nhấn **In báo cáo ngày** để mở hộp thoại xuất báo cáo.
+
+| Báo cáo | Nội dung | Tham số |
+|---------|----------|---------|
+| **Tồn kho** | Danh sách thuốc, số lượng, giá bán, tổng giá trị tồn | — |
+| **Doanh thu** | Tổng doanh thu, số hóa đơn, giá trị trung bình, doanh thu theo ngày, thuốc bán chạy | Từ ngày → đến ngày |
+| **Hóa đơn** | Toàn bộ hóa đơn trong một ngày kèm tổng doanh thu | Ngày |
+| **Thuốc sắp hết hạn** | Thuốc còn hạn dưới ngưỡng cảnh báo, sắp xếp theo hạn gần nhất | Số ngày cảnh báo |
+
+Báo cáo được lưu vào thư mục `exports/` dưới dạng PDF và ghi nhận vào nhật ký hoạt động.
+Font `assets/fonts/arial.ttf` đảm bảo tiếng Việt hiển thị đúng dấu; nếu thiếu font,
+hệ thống tự chuyển sang Helvetica thay vì báo lỗi.
+
+---
+
+## Kiểm thử
+
+Bộ kiểm thử gồm **167 test case**, chạy hoàn toàn offline trên SQLite tạm thời
+nên không ảnh hưởng tới dữ liệu thật.
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+Kết quả mong đợi:
+
+```
+167 passed
+```
+
+### Chạy theo nhóm
+
+```bash
+pytest tests/test_workflows.py     # nghiệp vụ nhập kho, bán hàng, doanh thu
+pytest tests/test_auth.py          # đăng nhập, đăng ký
+pytest tests/test_ui.py            # giao diện (headless)
+pytest -k expiry                   # lọc theo tên test
+pytest -v                          # xem chi tiết từng test
+```
+
+### Phạm vi kiểm thử
+
+| Tệp | Nội dung kiểm thử |
+|-----|-------------------|
+| `test_database.py` | Tạo bảng, migration, giao dịch, dữ liệu tham chiếu, dialect SQL |
+| `test_auth.py` | Đăng nhập đúng/sai, nâng cấp mật khẩu cũ sang bcrypt, ràng buộc đăng ký |
+| `test_workflows.py` | Nhập kho cộng tồn, bán hàng trừ tồn, tổng tiền hóa đơn, cảnh báo hạn dùng, tổng hợp doanh thu |
+| `test_reports.py` | Sinh đủ 4 loại PDF, hoạt động cả khi database rỗng, định dạng số liệu |
+| `test_ui.py` | Mở toàn bộ 8 màn hình và 12 hộp thoại, kiểm tra cột bảng khớp tiêu đề |
+| `test_helpers.py` | Định dạng tiền tệ/ngày tháng, kiểm tra email/điện thoại, chọn backend |
+| `test_postgres.py` | Hành vi riêng của PostgreSQL *(bỏ qua nếu không có server)* |
+
+### Kiểm thử trên PostgreSQL
+
+Một số hành vi chỉ tồn tại trên PostgreSQL — điển hình là việc một câu lệnh lỗi
+làm hỏng toàn bộ giao dịch. SQLite không tái hiện được điều này, nên các test đó
+cần một server thật:
+
+```bash
+TEST_PG_HOST=127.0.0.1 TEST_PG_PORT=5432 TEST_PG_NAME=medimanager_test \
+TEST_PG_USER=postgres TEST_PG_PASSWORD=postgres pytest tests/test_postgres.py
+```
+
+Nếu không đặt `TEST_PG_HOST`, nhóm test này được **bỏ qua** (skip) chứ không báo lỗi.
+
+### Kiểm thử giao diện không cần màn hình
+
+`test_ui.py` dùng nền tảng offscreen của Qt nên chạy được trên máy chủ không có
+màn hình (CI, WSL, container):
+
+```bash
+QT_QPA_PLATFORM=offscreen pytest tests/test_ui.py
+```
+
+Các test này mở thật từng cửa sổ với database thật, nhờ đó phát hiện được những
+lỗi mà unit test bỏ sót: thiếu file `.ui`, sai tên widget, hoặc truy vấn không
+khớp lược đồ.
 
 ---
 
 ## Đóng gói ứng dụng
 
-### Tạo file executable (.exe) với PyInstaller
-
-#### Bước 1: Cài đặt PyInstaller
+Đóng gói thành file thực thi bằng **PyInstaller**:
 
 ```bash
 pip install pyinstaller
+
+pyinstaller --onefile --windowed \
+  --name MediManager \
+  --icon=MediManager.ico \
+  --add-data "src/ui/forms:src/ui/forms" \
+  --add-data "assets:assets" \
+  run.py
 ```
 
-#### Bước 2: Build ứng dụng
+> Trên Windows, dấu phân cách của `--add-data` là `;` thay vì `:`:
+> `--add-data "src/ui/forms;src/ui/forms"`
 
-**Windows:**
-```bash
-pyinstaller --noconfirm --windowed \
-    --icon=MediManager.ico \
-    --add-data "ui;ui" \
-    --add-data "assets;assets" \
-    --add-data ".env;." \
-    run.py
-```
+File thực thi nằm trong thư mục `dist/`. Bản đóng gói dùng SQLite sẽ chạy được
+ngay mà không cần cài đặt gì thêm.
 
-**macOS/Linux:**
-```bash
-pyinstaller --noconfirm --windowed \
-    --icon=MediManager.ico \
-    --add-data "ui:ui" \
-    --add-data "assets:assets" \
-    --add-data ".env:." \
-    run.py
-```
+---
 
-#### Bước 3: Tìm file thực thi
+## Xử lý sự cố
 
-File executable sẽ nằm trong:
-```
-dist/run/run.exe      (Windows)
-dist/run/run          (macOS/Linux)
-```
-
-#### Bước 4: Phân phối
-
-1. Copy thư mục `dist/run/` sang máy khác
-2. Đảm bảo file `.env` đã được cấu hình đúng
-3. Chạy file `run.exe` (Windows) hoặc `run` (macOS/Linux)
-
-> **Lưu ý**: Đảm bảo file `.env` không chứa thông tin nhạy cảm khi phân phối
+| Hiện tượng | Nguyên nhân & cách xử lý |
+|------------|--------------------------|
+| `Missing required database configuration` | Đang ở chế độ PostgreSQL nhưng thiếu `DB_HOST`/`DB_PASSWORD`. Điền vào `.env`, hoặc đặt `DB_BACKEND=sqlite` để chạy offline |
+| `Failed to connect to the database` | Sai thông tin kết nối, hoặc project Supabase đang tạm dừng. Kiểm tra lại `.env` và trạng thái project |
+| `ModuleNotFoundError: No module named 'psycopg2'` | Chỉ cần khi dùng PostgreSQL: `pip install psycopg2-binary` |
+| `ImportError: libEGL.so.1` (Linux) | Thiếu thư viện hệ thống của Qt: `sudo apt install libegl1 libgl1 libxkbcommon-x11-0` |
+| Báo cáo PDF mất dấu tiếng Việt | Thiếu `assets/fonts/arial.ttf`. Khôi phục file font từ repository |
+| Quên mật khẩu admin | Ở chế độ SQLite: xóa `data/medimanager.db` để tạo lại tài khoản `admin`/`admin` (mất toàn bộ dữ liệu) |
+| Muốn bắt đầu lại từ đầu | `python seed_demo_data.py --reset` |
 
 ---
 
 ## Roadmap
 
-### Version 1.0 (Completed)
-- [x] Giao diện cơ bản với PyQt6
-- [x] Quản lý thuốc, khách hàng, nhà cung cấp
-- [x] Hóa đơn và tồn kho cơ bản
-- [x] Database MySQL local
-
-### Version 2.0 (Current)
-- [x] Migrate sang Supabase PostgreSQL Cloud
-- [x] Refactor theo Clean Architecture
-- [x] Tách UI thành các module riêng
-- [x] Service layer cho business logic
-- [ ] Hoàn thiện tất cả UI windows/dialogs (In Progress)
-- [ ] Thêm unit tests (Planned)
-
-### Version 3.0 (Future)
-- **Mobile App**: Flutter app kết nối API
-- **Advanced RBAC**: Phân quyền chi tiết hơn
-- **Analytics Dashboard**: Biểu đồ và thống kê nâng cao
-- **Notifications**: Thông báo realtime
-- **Barcode Scanner**: Quét mã vạch thuốc
-- **Multi-language**: Tiếng Việt & English
-- **Dark Mode**: Giao diện tối
-- **Export Excel**: Xuất báo cáo Excel
-- **Sync**: Đồng bộ offline-online
-- **AI**: Gợi ý thuốc dựa trên triệu chứng
-
-### Version 4.0 (Vision)
-- **Web App**: Progressive Web App (PWA)
-- **Microservices**: Tách backend thành microservices
-- **Docker**: Containerization
-- **Redis Cache**: Caching layer
-- **GraphQL API**: Alternative to REST
-- **Elasticsearch**: Advanced search
-- **Big Data**: Analytics với Apache Spark
-- **Integration**: Kết nối hệ thống kế toán, ERP
+- [x] Kiến trúc phân lớp (Clean Architecture)
+- [x] Mã hóa mật khẩu bằng bcrypt
+- [x] Hỗ trợ hai backend SQLite / PostgreSQL
+- [x] Quản lý nhập kho theo phiếu (header + chi tiết)
+- [x] Cảnh báo hạn sử dụng phân mức
+- [x] Báo cáo doanh thu, tồn kho, hóa đơn, hạn dùng dạng PDF
+- [x] Bộ kiểm thử tự động
+- [x] Script nạp dữ liệu mẫu
+- [ ] Phân quyền chi tiết theo chức vụ trên từng màn hình
+- [ ] Biểu đồ thống kê trực quan trên dashboard
+- [ ] Xuất báo cáo dạng Excel
+- [ ] Sao lưu / phục hồi dữ liệu
+- [ ] Hỗ trợ máy quét mã vạch
 
 ---
 
 ## Đóng góp
 
-Mọi đóng góp đều được chào đón! Dự án này đang trong giai đoạn phát triển tích cực.
+### Quy trình
 
-### Cách đóng góp
+1. Fork repository
+2. Tạo nhánh tính năng: `git checkout -b feature/ten-tinh-nang`
+3. Viết mã và **bổ sung test** cho phần thay đổi
+4. Chạy `pytest` để đảm bảo toàn bộ test còn xanh
+5. Commit với thông điệp rõ ràng
+6. Mở Pull Request
 
-1. **Fork** repository
-2. Tạo **feature branch**:
-   ```bash
-   git checkout -b feature/TinhNangMoi
-   ```
-3. **Commit** thay đổi:
-   ```bash
-   git commit -m "Add: Thêm tính năng mới"
-   ```
-4. **Push** lên branch:
-   ```bash
-   git push origin feature/TinhNangMoi
-   ```
-5. Tạo **Pull Request**
+### Quy ước mã nguồn
 
-### Coding Guidelines
+- Tuân thủ **PEP 8**
+- Đặt tên bằng tiếng Anh, thông báo hiển thị cho người dùng bằng tiếng Việt
+- Mỗi hàm public cần có docstring
+- Không viết SQL riêng cho từng backend — dùng `db.sql` (`SqlDialect`) khi cú pháp khác nhau
+- Thay đổi lược đồ phải sửa `src/core/schema.py`, không sửa trực tiếp trong mã màn hình
 
-- Tuân thủ **PEP 8** style guide
-- Thêm **docstrings** cho functions/classes
-- Viết **type hints** cho parameters
-- Thêm **unit tests** cho code mới
-- Cập nhật **documentation** khi cần
+### Báo lỗi
 
-### Issues & Bugs
-
-Nếu bạn tìm thấy bug hoặc có đề xuất tính năng:
-1. Kiểm tra [Issues](https://github.com/thanhtranarch/hust_projectI_MedicineManagement/issues) hiện tại
-2. Tạo issue mới với template phù hợp
-3. Mô tả chi tiết vấn đề/tính năng
+Khi tạo issue, vui lòng nêu rõ: backend đang dùng (SQLite hay PostgreSQL),
+phiên bản Python, các bước tái hiện và thông báo lỗi đầy đủ.
 
 ---
 
 ## License
 
-Dự án này được phát hành dưới **MIT License**.
+Dự án được phát hành dưới **MIT License**.
 
 ```
 MIT License
@@ -562,25 +691,5 @@ Môn học: **PROJECT I**
 
 [![GitHub](https://img.shields.io/badge/GitHub-thanhtranarch-181717?style=for-the-badge&logo=github)](https://github.com/thanhtranarch)
 [![Email](https://img.shields.io/badge/Email-Contact-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:thanh.tt239253@sis.hust.edu.vn)
-
-</div>
-
----
-
-## Cảm ơn
-
-Xin cảm ơn:
-- **Supabase Team** - Cloud PostgreSQL platform tuyệt vời
-- **Riverbank Computing** - PyQt6 framework
-- **Giảng viên môn PROJECT I** - Hướng dẫn và hỗ trợ
-- **Cộng đồng Python Việt Nam** - Nguồn cảm hứng và kiến thức
-
----
-
-<div align="center">
-
-**Nếu bạn thấy dự án hữu ích, hãy cho một Star nhé!**
-
-Made with by [Trần Tiến Thạnh](https://github.com/thanhtranarch)
 
 </div>

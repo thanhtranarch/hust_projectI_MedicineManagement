@@ -76,10 +76,13 @@ class StockWindow(BaseWindow):
                 self.tableWidget.setRowHidden(row, not match)
 
     def handle_cell_click(self, row, column):
-        """Handle cell click to open detail dialog"""
-        # Currently no specific detail dialog for stock
-        # Could open medicine detail if needed
-        pass
+        """Open the goods-receipt document behind the clicked row"""
+        stock_id_item = self.tableWidget.item(row, 0)
+        if not stock_id_item:
+            return
+
+        dialog = StockInformationDialog(self.context, stock_id_item.text(), self)
+        dialog.exec()
 
     def show_create_stock(self):
         """Show create stock dialog"""

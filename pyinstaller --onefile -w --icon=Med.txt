@@ -1,1 +1,0 @@
-pyinstaller --onefile -w --icon=MediManager.ico --add-data "fonts/Arial.ttf;fonts" --add-data "ui/*.ui;ui" --add-data "icon/*.png;icon" MediManager.py

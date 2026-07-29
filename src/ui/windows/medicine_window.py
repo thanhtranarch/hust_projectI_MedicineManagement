@@ -8,6 +8,13 @@ from PyQt6.QtCore import Qt
 
 from src.ui.base import BaseWindow
 from src.ui.dialogs.medicine_information_dialog import MedicineInformationDialog
+from src.utils.helpers import format_currency
+
+MEDICINE_HEADERS = ["ID", "Tên thuốc", "Danh mục", "Tồn kho",
+                    "Giá bán", "Hạn dùng", "Chi tiết"]
+
+# Columns that open the detail dialog when clicked
+CLICKABLE_COLUMNS = (1, 6)
 
 
 class MedicineWindow(BaseWindow):
@@ -28,80 +35,63 @@ class MedicineWindow(BaseWindow):
     def load_medicine_data(self):
         """Load medicine data into table"""
         try:
+            # LEFT JOIN: medicines that have no category yet must still be listed
             sql = """
                 SELECT m.medicine_id, m.medicine_name, c.category_name,
-                       m.created_at, m.updated_at
+                       m.stock_quantity, m.sale_price, m.expiration_date
                 FROM medicine m
-                JOIN category c ON m.category_id = c.category_id
+                LEFT JOIN category c ON m.category_id = c.category_id
                 ORDER BY m.medicine_name
             """
-            cursor = self.db.execute(sql)
-            results = cursor.fetchall()
+            self.db.execute(sql)
+            results = self.db.fetchall()
 
-            if not results:
-                self.show_warning("No medicine data found")
-                return
-
-            # Configure table
-            column_count = len(cursor.description) + 1  # +1 for "View Details"
+            # Sorting must be off while filling, otherwise rows move mid-populate
+            self.tableWidget.setSortingEnabled(False)
             self.tableWidget.setRowCount(len(results))
-            self.tableWidget.setColumnCount(column_count)
+            self.tableWidget.setColumnCount(len(MEDICINE_HEADERS))
+            self.tableWidget.setHorizontalHeaderLabels(MEDICINE_HEADERS)
 
-            # Set headers
-            self.tableWidget.setHorizontalHeaderLabels([
-                "ID", "Name", "Category", "Created At", "Updated At", "Details"
-            ])
-
-            # Set column widths
-            self.tableWidget.setColumnWidth(0, 50)
-            self.tableWidget.setColumnWidth(1, 200)
-            self.tableWidget.setColumnWidth(2, 150)
-            self.tableWidget.setColumnWidth(3, 150)
-            self.tableWidget.setColumnWidth(4, 150)
-            self.tableWidget.setColumnWidth(5, 150)
-
-            # Populate table
             for row_idx, row_data in enumerate(results):
-                medicine_id = row_data[0]
+                self._fill_row(row_idx, row_data)
 
-                for col_idx in range(column_count):
-                    if col_idx < len(row_data):
-                        value = row_data[col_idx]
-
-                        if col_idx == 0:
-                            # ID column - numeric sort
-                            item = QTableWidgetItem()
-                            item.setData(Qt.ItemDataRole.DisplayRole, int(value))
-                            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                        else:
-                            item = QTableWidgetItem(str(value))
-
-                            # Make name and category clickable
-                            if col_idx in [1, 2]:
-                                font = QFont()
-                                font.setUnderline(True)
-                                item.setFont(font)
-                                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                                item.setData(Qt.ItemDataRole.UserRole, medicine_id)
-                                item.setToolTip("Click to view medicine details")
-
-                        self.tableWidget.setItem(row_idx, col_idx, item)
-                    else:
-                        # "View Details" column
-                        detail_item = QTableWidgetItem("View Details")
-                        font = QFont()
-                        font.setUnderline(True)
-                        detail_item.setFont(font)
-                        detail_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                        detail_item.setData(Qt.ItemDataRole.UserRole, medicine_id)
-                        detail_item.setToolTip("Click to view medicine details")
-                        self.tableWidget.setItem(row_idx, col_idx, detail_item)
-
-            # Enable sorting after data is loaded
+            self.tableWidget.resizeColumnsToContents()
             self.tableWidget.setSortingEnabled(True)
 
         except Exception as e:
             self.show_error(f"Error loading medicine data: {e}")
+
+    def _fill_row(self, row_idx, row_data):
+        """Populate one table row from a medicine record."""
+        medicine_id, name, category, quantity, price, expiry = row_data
+
+        # ID gets a numeric value so sorting is by number, not by string
+        id_item = QTableWidgetItem()
+        id_item.setData(Qt.ItemDataRole.DisplayRole, int(medicine_id))
+        id_item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        cells = [
+            id_item,
+            QTableWidgetItem(name or ''),
+            QTableWidgetItem(category or 'Chưa phân loại'),
+            QTableWidgetItem(str(quantity if quantity is not None else 0)),
+            QTableWidgetItem(format_currency(price)),
+            QTableWidgetItem(
+                expiry.strftime("%d/%m/%Y") if hasattr(expiry, 'strftime') else str(expiry or '')
+            ),
+            QTableWidgetItem("Xem chi tiết"),
+        ]
+
+        underline = QFont()
+        underline.setUnderline(True)
+
+        for col_idx, item in enumerate(cells):
+            item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+            if col_idx in CLICKABLE_COLUMNS:
+                item.setFont(underline)
+                item.setToolTip("Nhấn để xem chi tiết thuốc")
+            item.setData(Qt.ItemDataRole.UserRole, medicine_id)
+            self.tableWidget.setItem(row_idx, col_idx, item)
 
     def search_medicine(self):
         """Search medicines by name"""
@@ -114,13 +104,14 @@ class MedicineWindow(BaseWindow):
                 self.tableWidget.setRowHidden(row, not match)
 
     def handle_cell_click(self, row, column):
-        """Handle cell click to open detail dialog"""
-        if column in [1, 5]:  # Name or Details column
-            item = self.tableWidget.item(row, column)
-            if item:
-                medicine_id = item.data(Qt.ItemDataRole.UserRole)
-                if medicine_id:
-                    self.show_medicine_detail(medicine_id)
+        """Open the detail dialog when a clickable column is clicked"""
+        if column not in CLICKABLE_COLUMNS:
+            return
+
+        item = self.tableWidget.item(row, column)
+        medicine_id = item.data(Qt.ItemDataRole.UserRole) if item else None
+        if medicine_id:
+            self.show_medicine_detail(medicine_id)
 
     def show_medicine_detail(self, medicine_id):
         """Show medicine detail dialog"""
